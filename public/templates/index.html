@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <form>
+        <label for="filtro-proveedor">Proveedor:</label>
+        <select name="filtro-proveedor">
+            <option value="" selected></option>
+            {% for proveedor in proveedores %}
+                <option value="{{proveedor.auto}}">{{proveedor.razon_social}}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="filtro-referencia">Tipo de artículo:</label>
+        <select name="filtro-referencia">
+            <option value="" selected></option>
+            <option value="0">Artículo con P.M.V.P marcado</option>
+            <option value="1">Artículo sin control de precio</option>
+        </select>
+        <br>
+        <label for="filtro-departamento">Departamento:</label>
+        <select name="filtro-departamento">
+                <option value="" selected></option>
+                {% for departamento in departamentos %}
+                    <option value="{{departamento.auto}}">{{departamento.nombre}}</option>
+                {% endfor %}
+        </select>
+        <br>
+        <label for="filtro-grupos">Grupo/Familia:</label>
+        <select name="filtro-grupos">
+                <option value="" selected></option>
+                {% for grupo in grupos %}
+                    <option value="{{grupo.auto}}">{{grupo.nombre}}</option>
+                {% endfor %}
+        </select>
+
+        <br>
+        <input type="submit" value="Generar">
+    </form>
+</body>
+</html>
