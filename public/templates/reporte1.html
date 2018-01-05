@@ -7,17 +7,26 @@
     <title>Document</title>
 </head>
 <body>
+    
     {% for articulo in articulos %}
-        Artículo: {{articulo.nombre}}
-        <br>
-        Almacenes:
-        {% for almacen in articulo.depositos %}
-            <ul>
-                <li>{{almacen.nombre}}: {{almacen.fisica}}</li>
-            </ul>
-        {% endfor %}
-
-        Cantidades vendidas: {{articulo.cantidad_vendida}}
+        <div style="border: 1px solid black">
+                <br>
+                Artículo: {{articulo.nombre}}
+                <br>
+                {% if articulo.depositos|length > 0 %}
+                    Almacenes:
+                    {% for almacen in articulo.depositos %}
+                        <ul>
+                            <li>{{almacen.nombre}}: {{almacen.fisica}}</li>
+                        </ul>
+                    {% endfor %}
+                {% endif %}
+                
+        
+                Cantidades vendidas: {{articulo.cantidad_vendida}}
+                <br>
+        </div>
     {% endfor %}
+    
 </body>
 </html>

@@ -13,7 +13,7 @@ SECRET_KEY = '1frzutblup=$4^zk2b(mw%d(b+_*q74z^@t0jjkr+2m@29)g1_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition

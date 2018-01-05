@@ -7,7 +7,8 @@
     <title>Document</title>
 </head>
 <body>
-    <form>
+    <form method="POST">
+        {% csrf_token %}
         <label for="filtro-proveedor">Proveedor:</label>
         <select name="filtro-proveedor">
             <option value="" selected></option>
@@ -19,8 +20,8 @@
         <label for="filtro-referencia">Tipo de artículo:</label>
         <select name="filtro-referencia">
             <option value="" selected></option>
-            <option value="0">Artículo con P.M.V.P marcado</option>
-            <option value="1">Artículo sin control de precio</option>
+            <option value="1">Artículo con P.M.V.P marcado</option>
+            <option value="0">Artículo sin control de precio</option>
         </select>
         <br>
         <label for="filtro-departamento">Departamento:</label>
@@ -36,6 +37,37 @@
                 <option value="" selected></option>
                 {% for grupo in grupos %}
                     <option value="{{grupo.auto}}">{{grupo.nombre}}</option>
+                {% endfor %}
+        </select>
+
+        <!--
+        <br>
+        <label for="filtro-subgrupo">Subgrupo:</label>
+        <select name="filtro-subgrupo">
+                <option value="" selected></option>
+                {% for grupo in grupos %}
+                    <option value="{{grupo.auto}}">{{grupo.nombre}}</option>
+                {% endfor %}
+        </select>
+        -->
+        <br>
+        <label for="filtro-marca">Marca:</label>
+        <select name="filtro-marca">
+                <option value="" selected></option>
+                {% for marca in marcas %}
+                    <option value="{{marca.auto}}">{{marca.nombre}}</option>
+                {% endfor %}
+        </select>
+        <br>
+        <label for="filtro-categoria">Categoria:</label>
+        <select name="filtro-categoria">
+                <option value="" selected></option>
+                {% for categoria in categorias %}
+                    {% if categoria.nombre == "Sub Producto" %}
+                        <option value="{{categoria.nombre}}">Producto Manufacturado</option>
+                    {% else %}
+                    <option value="{{categoria.nombre}}">{{categoria.nombre}}</option>
+                    {% endif %}
                 {% endfor %}
         </select>
 

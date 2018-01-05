@@ -18,31 +18,93 @@ def dictfetchall(cursor):
 class HomeView(View):
     def get(self, request):
         with connection.cursor() as cursor:
+            # Obtener los proveedores
             cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE estatus = 'Activo'")
             proveedores = dictfetchall(cursor)
 
+            # Obtener los departamentos del sistema
             cursor.execute("SELECT auto, nombre FROM empresa_departamentos")
             departamentos = dictfetchall(cursor)
 
+            # Obtener los grupos/familias de los articulos
             cursor.execute("SELECT auto, nombre FROM productos_grupo")
             grupos = dictfetchall(cursor)
 
+            # Obtener las marcas de los articulos
+            cursor.execute("SELECT auto, nombre FROM productos_marca")
+            marcas = dictfetchall(cursor)
+
             cursor.close()
+            
+            # Lista de categorias en el sistema
+            categorias = [{"nombre": "Bien de Servicio"},{"nombre": "Materia Prima"},{"nombre": "Producto Terminado"},{"nombre": "Uso Interno"},{"nombre": "Producto Manufacturado"}]
 
         ctx        = {
             "proveedores": proveedores,
             "departamentos": departamentos,
-            "grupos": grupos
+            "grupos": grupos,
+            "subgrupos": "",
+            "marcas": marcas,
+            "categorias": categorias
 
         }
         template   = "index.html"
         return render(request, template, ctx)
 
     def post(self, request):
+        # Obtenemos los filtros del formulario
+        auto_proveedor    = request.POST.get("filtro-proveedor")
+        referencia        = request.POST.get("filtro-referencia")
+        auto_departamento = request.POST.get("filtro-departamento")
+        auto_grupo        = request.POST.get("filtro-grupos")
+        auto_marca        = request.POST.get("filtro-marcas")
+
         with connection.cursor() as cursor:
+            # Filtros
+            filtros = ""
+            sql = "SELECT productos.auto, productos.codigo, productos.nombre FROM productos WHERE estatus = 'Activo'"
+            
+            # Obtener los articulos del proveedor mediante el filtro
+            proveedor = ""
+            if auto_proveedor is not None and auto_proveedor != "":
+                cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE auto = %s", [auto_proveedor])
+                proveedor = dictfetchall(cursor)[0]
+                sql = "SELECT compras_detalle.auto_producto AS auto, compras_detalle.codigo, compras_detalle.nombre, productos.estatus FROM compras_detalle INNER JOIN compras ON compras.auto = compras_detalle.auto_documento INNER JOIN productos ON compras_detalle.auto_producto = productos.auto WHERE compras.auto_proveedor = %s and productos.estatus = 'Activo'" % auto_proveedor
+
+            # Filtro por referencia (SI ES MARCADO O NO / 0|1)
+            if referencia is not None and referencia != "":
+                filtros = "%s AND productos.referencia = %s" % (filtros, referencia)
+
+            # Obtener info del filtro (departamento)
+            departamento = ""
+            if auto_departamento is not None and auto_departamento != "":
+                cursor.execute("SELECT auto, nombre FROM empresa_departamentos WHERE auto = %s", [auto_departamento])
+                departamento = dictfetchall(cursor)[0]
+
+                filtros = "%s AND productos.auto_departamento = %s" % (filtros, auto_departamento)
+            
+            # Obtener info del filtro (grupo)
+            grupo = ""
+            if auto_grupo is not None and auto_grupo != "":
+                # Obtener e grupos/familias del filtro
+                cursor.execute("SELECT auto, nombre FROM productos_grupo WHERE auto = %s", [auto_grupo])
+                grupo = dictfetchall(cursor)[0]
+
+                filtros = "%s AND productos.auto_grupo = %s" % (filtros, auto_grupo)
+
+            marca = ""
+            if auto_marca is not None and auto_marca != "":
+            # Obtener la marcas del filtro
+                cursor.execute("SELECT auto, nombre FROM productos_marca WHERE auto = %s", [auto_marca])
+                marca = dictfetchall(cursor)[0]
+
+                filtros = "%s AND productos.auto_marca = %s" % (filtros, auto_marca)
+
             # Obtener los articulos
-            cursor.execute("SELECT productos.auto, productos.nombre FROM productos WHERE estatus = 'Activo' and codigo='01005'")
+            sql_completo = sql + filtros + " GROUP BY auto"
+            cursor.execute(sql_completo)
             articulos = dictfetchall(cursor)
+            
 
             # Damos formato a los datos
             articulos_array = []
@@ -61,7 +123,7 @@ class HomeView(View):
                     articulo_objeto["depositos"].append(deposito)
 
                 # Calculamos las cantidades vendidas
-                cursor.execute("SELECT cantidad FROM ventas_detalle WHERE codigo = '01005' and fecha > '2017-01-01'")
+                cursor.execute("SELECT SUM(cantidad) as cantidad FROM ventas_detalle WHERE auto_producto = %s and fecha > '2017-01-01' GROUP BY auto_producto", [articulo["auto"]])
                 cantidades = dictfetchall(cursor)
                 c = 0
                 for cantidad in cantidades:
@@ -78,5 +140,5 @@ class HomeView(View):
         ctx        = {
             "articulos": articulos_array
         }
-        template   = "index.html"
+        template   = "reporte1.html"
         return render(request, template, ctx)
