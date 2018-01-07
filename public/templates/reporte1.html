@@ -5,28 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <style>
+        body{
+            font-family: "Arial", "Times New Roman", sans-serif;
+            padding: 0 .5rem;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between
+        }
+        .filtros {
+            margin-bottom: 1rem;
+        }
+        .filtros p {
+            margin: .2rem;
+            font-size: .8rem;
+        }
+        .articulo {
+            border: 1px solid black;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: .4rem;
+        }
+        .articulo header{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            background-color: lightgray;
+            padding: .2rem 1rem;
+            border-bottom: 1px solid black;
+            font-weight: bold;
+        }
+        .depositos h3{
+            font-size: 1.2rem;
+            margin: .5rem
+        }
+        table {
+            border-collapse: collapse;
+            border-left:none;
+            font-size: .9rem;
+        }
+        
+        th, td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        td, th {
+            padding: .3rem;
+        }
+        @media print {
+            @page {
+                size: letter;
+                margin: 0.5cm;
+            }
+        }
+    </style>
 </head>
 <body>
     
-    {% for articulo in articulos %}
-        <div style="border: 1px solid black">
-                <br>
-                Artículo: {{articulo.nombre}}
-                <br>
-                {% if articulo.depositos|length > 0 %}
-                    Almacenes:
-                    {% for almacen in articulo.depositos %}
-                        <ul>
-                            <li>{{almacen.nombre}}: {{almacen.fisica}}</li>
-                        </ul>
-                    {% endfor %}
+    <h1>LISTADOS DE ARTÍCULOS</h1>
+    <div class="header">
+        <div class="filtros">
+            <p><span class="bold">Proveedor</span>: {{proveedor.razon_social}}</p>
+            <p><span class="bold">Tipo de artículo:</span> 
+                {% if referencia == '1' %}
+                Artículos con P.M.V.P marcado
                 {% endif %}
-                
-        
-                Cantidades vendidas: {{articulo.cantidad_vendida}}
-                <br>
+                {% if referencia == '0' %}
+                Artículos sin control de precio
+                {% endif %}
+            </p>
+            <p><span class="bold">Departamento:</span> {{departamento.nombre}}</p>
+            <p><span class="bold">Grupo/Familia:</span> {{grupo.nombre}}</p>
+            <p><span class="bold">Marca:</span> {{marca.nombre}}</p>
+            <p><span class="bold">Categoria:</span> {{categoria}}</p>
+            <p><span class="bold">Desde:</span> {{desde}} | Hasta:</span> {{hasta}}</p>
         </div>
-    {% endfor %}
-    
+        <div class="datos-usuario filtros">
+            <p><span class="bold">Fecha:</span> {{fecha}}</p>
+        </div>
+    </div>
+
+    <section class="articulos">
+        {% for articulo in articulos %}
+            <article class="articulo">
+                <header>
+                    <div class="articulo-nombre">
+                        {{articulo.codigo}} - {{articulo.nombre}}
+                    </div>
+                    <div class="articulo-ventas">
+                        Cantidades vendidas: {{articulo.cantidad_vendida}}
+                    </div>
+                </header>
+                <section class="depositos">
+                    <h3>DEPOSITOS ASOCIADOS AL ARTÍCULO</h3>
+                    {% if articulo.depositos|length > 0 %}
+                        <table>
+                            <tr style="text-align:center; font-weight: bold;">
+                                <td>NOMBRE</td>
+                                <td>CANTIDAD EXISTENTE</td>
+                            </tr>
+                            {% for almacen in articulo.depositos %}
+                                <tr>
+                                    <td>{{almacen.nombre}}</td>
+                                    <td style="text-align:center;">{{almacen.fisica}}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    {% else %}
+                        Este artículo no posee depositos
+                    {% endif %}
+                </section>
+                <section class="grafica">
+
+                </section>
+            </article>
+        {% endfor %}
+    </section>
 </body>
 </html>

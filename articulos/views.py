@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.urlresolvers import reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import connection
+from datetime import datetime, timedelta
+from .utils import render_to_pdf
 import json
 
 def dictfetchall(cursor):
@@ -19,19 +21,19 @@ class HomeView(View):
     def get(self, request):
         with connection.cursor() as cursor:
             # Obtener los proveedores
-            cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE estatus = 'Activo'")
+            cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE estatus = 'Activo' ORDER BY razon_social")
             proveedores = dictfetchall(cursor)
 
             # Obtener los departamentos del sistema
-            cursor.execute("SELECT auto, nombre FROM empresa_departamentos")
+            cursor.execute("SELECT auto, nombre FROM empresa_departamentos ORDER BY nombre")
             departamentos = dictfetchall(cursor)
 
             # Obtener los grupos/familias de los articulos
-            cursor.execute("SELECT auto, nombre FROM productos_grupo")
+            cursor.execute("SELECT auto, nombre FROM productos_grupo ORDER BY nombre")
             grupos = dictfetchall(cursor)
 
             # Obtener las marcas de los articulos
-            cursor.execute("SELECT auto, nombre FROM productos_marca")
+            cursor.execute("SELECT auto, nombre FROM productos_marca ORDER BY nombre")
             marcas = dictfetchall(cursor)
 
             cursor.close()
@@ -58,6 +60,7 @@ class HomeView(View):
         auto_departamento = request.POST.get("filtro-departamento")
         auto_grupo        = request.POST.get("filtro-grupos")
         auto_marca        = request.POST.get("filtro-marcas")
+        categoria         = request.POST.get("filtro-categorias")
 
         with connection.cursor() as cursor:
             # Filtros
@@ -65,7 +68,7 @@ class HomeView(View):
             sql = "SELECT productos.auto, productos.codigo, productos.nombre FROM productos WHERE estatus = 'Activo'"
             
             # Obtener los articulos del proveedor mediante el filtro
-            proveedor = ""
+            proveedor = {}
             if auto_proveedor is not None and auto_proveedor != "":
                 cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE auto = %s", [auto_proveedor])
                 proveedor = dictfetchall(cursor)[0]
@@ -100,16 +103,39 @@ class HomeView(View):
 
                 filtros = "%s AND productos.auto_marca = %s" % (filtros, auto_marca)
 
+            if categoria is not None and categoria != "":
+                filtros = "%s AND productos.categoria = '%s'" % (filtros, categoria)
+            
+
             # Obtener los articulos
             sql_completo = sql + filtros + " GROUP BY auto"
             cursor.execute(sql_completo)
             articulos = dictfetchall(cursor)
+            
+            # Filtro de fechas para ventas
+            filtro_ventas = request.POST.get("filtro-dias") # dias || fechas
+            dias = 0
+            desde = ""
+            hasta = str(datetime.today().date()) # Por default hasta el dia de hoy
+
+            # si es por dias (Hoy, dia anterior, ultimos 15 dias, etc)
+            if filtro_ventas == "dias":
+                dias = request.POST.get("filtro-dia")
+                d = datetime.today() - timedelta(days=int(dias)) # Desde hoy descuenta los dias indicados
+                desde = str(d.date()) # Lo pasamos a string
+                if dias == "1": # Si la opcion es "Dia Anterior" solo mostramos los datos de ese dia especfico
+                    hasta = desde
+            elif filtro_ventas == "fechas": # Si es por rango de fechas
+                desde = request.POST.get("filtro-desde")
+                if request.POST.get("filtro-hasta") != "" and request.POST.get("filtro-hasta") is not None: # SI no se pasa una fecha es hasta hoy
+                    hasta = request.POST.get("filtro-hasta")
             
 
             # Damos formato a los datos
             articulos_array = []
             for articulo in articulos:
                 articulo_objeto = {
+                    "codigo": articulo["codigo"],
                     "nombre": articulo["nombre"],
                     "depositos": [],
                     "cantidad_vendida": 0
@@ -123,12 +149,12 @@ class HomeView(View):
                     articulo_objeto["depositos"].append(deposito)
 
                 # Calculamos las cantidades vendidas
-                cursor.execute("SELECT SUM(cantidad) as cantidad FROM ventas_detalle WHERE auto_producto = %s and fecha > '2017-01-01' GROUP BY auto_producto", [articulo["auto"]])
-                cantidades = dictfetchall(cursor)
-                c = 0
-                for cantidad in cantidades:
-                    c += cantidad["cantidad"]
-                articulo_objeto["cantidad_vendida"] = int(c)
+                cursor.execute("SELECT SUM(cantidad) as cantidad FROM ventas_detalle WHERE auto_producto = %s AND fecha >= %s AND fecha <= %s GROUP BY auto_producto", [articulo["auto"], desde, hasta])
+                try:
+                    cantidad = dictfetchall(cursor)[0]
+                    articulo_objeto["cantidad_vendida"] = int(cantidad["cantidad"])
+                except:
+                    pass
 
                 # Agregamos el articulo a la lista
                 articulos_array.append(articulo_objeto)
@@ -138,7 +164,18 @@ class HomeView(View):
                 
 
         ctx        = {
-            "articulos": articulos_array
+            "articulos": articulos_array,
+            "proveedor": proveedor,
+            "referencia": referencia,
+            "departamento": departamento,
+            "grupo": grupo,
+            "marca": marca,
+            "categoria": categoria,
+            "fecha": str(datetime.today().date().strftime('%d-%m-%Y')),
+            "desde":desde,
+            "hasta":hasta
         }
         template   = "reporte1.html"
         return render(request, template, ctx)
+       # pdf = render_to_pdf(template, ctx)
+        #return HttpResponse(pdf, content_type='application/pdf')
