@@ -68,7 +68,7 @@
                 <div class="col s6">
                     <h5 class="center">Datos del filtro de cantidades de venta</h5>
                     <p>
-                        <input type="radio" name="filtro-dias" id="dias" value="dias" class="with-gap">
+                        <input type="radio" name="filtro-dias" id="dias" value="dias" class="with-gap" checked>
                         <label for="dias">Dias anteriores</label>
                         <div class="input-field col s12">
                             <select name="filtro-dia">
@@ -106,10 +106,20 @@
                             <div class="input-field col s12">
                                 <select name="tipo-reporte">
                                     <option value="lista" selected>Listado</option>
-                                    <option value="grafica-total" selected>Grafica | Total de ventas</option>
-                                    <option value="grafica-detallada" selected>Grafica | Total de ventas detallado</option>
+                                    <option value="grafica-total">Grafica | Total de ventas</option>
+                                    <option value="grafica-detallada">Grafica | Total de ventas detallado</option>
                                 </select>
                                 <label>Tipo de reporte</label>
+                            </div>
+                        </div>
+                        <div class="col s12">
+                            <div class="input-field col s12">
+                                <select name="orden">
+                                    <option value="mas-vendidos">Más vendidos</option>
+                                    <option value="menos-vendidos">Menos vendidos</option>
+                                    <option value="orden-abc" selected>Orden alfabético</option>
+                                </select>
+                                <label>Orden</label>
                             </div>
                         </div>
                     </div>
@@ -130,7 +140,8 @@
             clear: 'Limpiar',
             close: 'Aceptar',
             closeOnSelect: true, // Close upon selecting a date,
-            format: 'yyyy-mm-dd'
+            format: 'yyyy-mm-dd',
+            firstDay: true
         });
     </script>
 {% endblock script %}

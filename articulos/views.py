@@ -61,11 +61,15 @@ class HomeView(View):
         auto_grupo        = request.POST.get("filtro-grupos")
         auto_marca        = request.POST.get("filtro-marcas")
         categoria         = request.POST.get("filtro-categorias")
+        tipo_reporte      = request.POST.get("tipo-reporte")
+        tipo_orden        = request.POST.get("orden") # WIP
 
         with connection.cursor() as cursor:
             # Filtros
             filtros = ""
-            sql = "SELECT productos.auto, productos.codigo, productos.nombre FROM productos WHERE estatus = 'Activo'"
+            
+            # Query sin filtros
+            sql = "SELECT ventas_detalle.auto_producto AS auto, productos.codigo, productos.nombre FROM ventas_detalle INNER JOIN productos ON ventas_detalle.auto_producto = productos.auto WHERE productos.estatus = 'Activo'"
             
             # Obtener los articulos del proveedor mediante el filtro
             proveedor = {}
@@ -175,7 +179,13 @@ class HomeView(View):
             "desde":desde,
             "hasta":hasta
         }
-        template   = "reporte1.html"
-        return render(request, template, ctx)
+
+        if tipo_reporte == "lista":
+            template   = "reporte_articulo_lista.html"
+            return render(request, template, ctx)
+        elif tipo_reporte == "grafica-total":
+            template   = "reporte_articulo_grafico_total.html"
+            return render(request, template, ctx)
+
        # pdf = render_to_pdf(template, ctx)
         #return HttpResponse(pdf, content_type='application/pdf')
