@@ -19,7 +19,8 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
-class HomeView(View):
+class HomeView(LoginRequiredMixin, View):
+    login_url = '/login/'
     def get(self, request):
         ctx = {}
         template   = "index.html"
