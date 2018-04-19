@@ -1,5 +1,4 @@
 import os
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -11,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '1frzutblup=$4^zk2b(mw%d(b+_*q74z^@t0jjkr+2m@29)g1_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('REPORTES_DEBUG', False)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -63,16 +62,46 @@ WSGI_APPLICATION = 'leonux_paseo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql', 
-        'NAME': '00000001',
-        'USER': 'root',
-        'PASSWORD': '123',
-        'HOST': '10.10.0.199',
-        'PORT': '3306',
+if DEBUG == False:
+    DATABASES = {
+        'leonux': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': '00000001',
+            'USER': 'root',
+            'PASSWORD': '123',
+            'HOST': '10.10.0.199',
+            'PORT': '3306',
+        },
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'report-system',
+            'USER': 'root',
+            'PASSWORD': '123',
+            'HOST': '10.10.0.199',
+            'PORT': '3306',
+        }
     }
-}
+else:
+    DATABASES = {
+        'leonux': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': '00000001',
+            'USER': 'root',
+            'PASSWORD': '',
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+        },
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'report-system',
+            'USER': 'root',
+            'PASSWORD': '',
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+        }
+    }
+
+
 
 
 # Password validation
@@ -111,16 +140,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-if not DEBUG == False:
+if DEBUG == False:
     STATIC_ROOT = '/usr/shared/reportes/static/'
     STATIC_URL = 'http://10.10.0.201/statir/'
 else:
     STATIC_URL = '/static/'
 
 # Media files
-if not DEBUG == False:
+if DEBUG == False:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'public/media')
     MEDIA_URL = 'http://10.10.0.201/mediar/'
 else:
-    MEDIA_URL = 'http://10.10.2.20/kioskos/'
-MEDIA_ROOT= "C:/xampp/htdocs/kioskos"
+    MEDIA_URL = 'http://localhost/mediar/'
+    MEDIA_ROOT= "C:/xampp/htdocs/mediar"
+
+LOGIN_REDIRECT_URL = '/'

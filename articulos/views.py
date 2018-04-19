@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View, TemplateView
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse, HttpResponse
-from django.db import connection
+from django.db import connection, connections
 from datetime import datetime, timedelta
 from .utils import render_to_pdf
 import json
+
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -16,10 +19,58 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
-
 class HomeView(View):
     def get(self, request):
-        with connection.cursor() as cursor:
+        ctx = {}
+        template   = "index.html"
+        return render(request, template, ctx)
+
+class LoginView(View):
+    def get(self, request):
+        ctx = {}
+        template   = "login.html"
+        return render(request, template, ctx)
+
+    def post(self, request):
+        template_name = "login.html"
+        mensaje       = ""
+
+        usuario       = request.POST.get("usuario")
+        contrasena    = request.POST.get("clave")
+
+        if not usuario and not contrasena:
+            mensaje = "No se deben dejar campos vacios"
+        else:
+            user = authenticate(username=usuario, password=contrasena)
+            if user is not None:
+                login(request, user)
+                return redirect('/')
+            else:
+                # registrar con datos de leonux
+                with connections['leonux'].cursor() as cursor:
+                    cursor.execute("SELECT nombre, codigo, clave FROM usuarios WHERE codigo = %s AND clave = %s", [usuario, contrasena])
+                    usuario_leonux     = cursor.fetchone()
+                    cursor.close()
+
+                    if usuario_leonux is not None:
+                        # Crear usuario
+                        new_user            = User.objects.create_user(usuario_leonux[1], 'it@grupopaseo.com', usuario_leonux[2])
+                        new_user.first_name = usuario_leonux[0]
+                        new_user.save()
+
+                        login(request, new_user)
+                        return redirect('/')
+
+        ctx = {
+            "mensaje": mensaje
+        }
+        template   = "login.html"
+        return render(request, template, ctx)
+
+class ArticuloReporteView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    def get(self, request):
+        with connections['leonux'].cursor() as cursor:
             # Obtener los proveedores
             cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE estatus = 'Activo' ORDER BY razon_social")
             proveedores = dictfetchall(cursor)
@@ -37,7 +88,7 @@ class HomeView(View):
             marcas = dictfetchall(cursor)
 
             cursor.close()
-            
+
             # Lista de categorias en el sistema
             categorias = [{"nombre": "Bien de Servicio"},{"nombre": "Materia Prima"},{"nombre": "Producto Terminado"},{"nombre": "Uso Interno"},{"nombre": "Producto Manufacturado"}]
 
@@ -50,7 +101,7 @@ class HomeView(View):
             "categorias": categorias
 
         }
-        template   = "index.html"
+        template   = "reportes/articulo-index.html"
         return render(request, template, ctx)
 
     def post(self, request):
@@ -64,13 +115,13 @@ class HomeView(View):
         tipo_reporte      = request.POST.get("tipo-reporte")
         tipo_orden        = request.POST.get("orden") # WIP
 
-        with connection.cursor() as cursor:
+        with connections['leonux'].cursor() as cursor:
             # Filtros
             filtros = ""
-            
+
             # Query sin filtros
             sql = "SELECT ventas_detalle.auto_producto AS auto, productos.codigo, productos.nombre FROM ventas_detalle INNER JOIN productos ON ventas_detalle.auto_producto = productos.auto WHERE productos.estatus = 'Activo'"
-            
+
             # Obtener los articulos del proveedor mediante el filtro
             proveedor = {}
             if auto_proveedor is not None and auto_proveedor != "":
@@ -89,7 +140,7 @@ class HomeView(View):
                 departamento = dictfetchall(cursor)[0]
 
                 filtros = "%s AND productos.auto_departamento = %s" % (filtros, auto_departamento)
-            
+
             # Obtener info del filtro (grupo)
             grupo = ""
             if auto_grupo is not None and auto_grupo != "":
@@ -109,13 +160,13 @@ class HomeView(View):
 
             if categoria is not None and categoria != "":
                 filtros = "%s AND productos.categoria = '%s'" % (filtros, categoria)
-            
+
 
             # Obtener los articulos
             sql_completo = sql + filtros + " GROUP BY auto"
             cursor.execute(sql_completo)
             articulos = dictfetchall(cursor)
-            
+
             # Filtro de fechas para ventas
             filtro_ventas = request.POST.get("filtro-dias") # dias || fechas
             dias = 0
@@ -133,7 +184,7 @@ class HomeView(View):
                 desde = request.POST.get("filtro-desde")
                 if request.POST.get("filtro-hasta") != "" and request.POST.get("filtro-hasta") is not None: # SI no se pasa una fecha es hasta hoy
                     hasta = request.POST.get("filtro-hasta")
-            
+
 
             # Damos formato a los datos
             articulos_array = []
@@ -152,8 +203,10 @@ class HomeView(View):
                 for deposito in depositos:
                     articulo_objeto["depositos"].append(deposito)
 
+                query = "SELECT SUM(cantidad) as cantidad FROM ventas_detalle WHERE auto_producto = %s AND fecha >= %s AND fecha <= %s GROUP BY auto_producto" % (articulo["auto"], desde, hasta)
+                print(query)
                 # Calculamos las cantidades vendidas
-                cursor.execute("SELECT SUM(cantidad) as cantidad FROM ventas_detalle WHERE auto_producto = %s AND fecha >= %s AND fecha <= %s GROUP BY auto_producto", [articulo["auto"], desde, hasta])
+                cursor.execute(query)
                 try:
                     cantidad = dictfetchall(cursor)[0]
                     articulo_objeto["cantidad_vendida"] = int(cantidad["cantidad"])
@@ -165,7 +218,7 @@ class HomeView(View):
 
             # Cerramos la conexion
             cursor.close()
-                
+
 
         ctx        = {
             "articulos": articulos_array,

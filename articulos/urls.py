@@ -1,7 +1,7 @@
 from django.conf.urls import url
-from .views import HomeView
+from .views import ArticuloReporteView
 
 urlpatterns = [
-    # Lista de clientes (Datos desde Servicios) (Home)
-    url(r'^$', HomeView.as_view(), name='clientes_list'),
+    # Reporte articulos
+    url(r'^articulos/$', ArticuloReporteView.as_view(), name='reporte-articulos'),
 ]

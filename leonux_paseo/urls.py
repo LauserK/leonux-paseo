@@ -17,9 +17,14 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from articulos import urls as articulos_urls
+from django.contrib.auth import urls as auth_urls
+from articulos.views import LoginView, HomeView
 
 urlpatterns = [
-    url(r'^', include(articulos_urls, namespace='articulos')),
+    url(r'^$', HomeView.as_view(), name='home'),
+    url(r'^reportes/', include(articulos_urls, namespace='reportes')),
+    url(r'^accounts/', include(auth_urls)),
+    url(r'^login/$', LoginView.as_view(), name='login'),
     url(r'^admin/', admin.site.urls),
-    
+
 ]

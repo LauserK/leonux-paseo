@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row">
+        <form method="POST" class="col s10 offset-s1 center-align">
+            {% csrf_token %}
+            <div class="row card">
+                <div class="col s12 center">
+                    <h4>REPORTE DE ARTÍCULOS</h4>
+                </div>
+                <div class="input-field col s12">
+                    <select name="filtro-proveedor">
+                        <option value="" selected></option>
+                        {% for proveedor in proveedores %}
+                            <option value="{{proveedor.auto}}">{{proveedor.razon_social}}</option>
+                        {% endfor %}
+                    </select>
+                    <label>Proveedor</label>
+                </div>
+                <div class="input-field col s12">
+                    <select name="filtro-referencia">
+                        <option value="" selected></option>
+                        <option value="1">Artículo con P.M.V.P marcado</option>
+                        <option value="0">Artículo sin control de precio</option>
+                    </select>
+                    <label>Tipo de artículo</label>
+                </div>
+                <div class="input-field col s12">
+                    <select name="filtro-departamento">
+                        <option value="" selected></option>
+                        {% for departamento in departamentos %}
+                            <option value="{{departamento.auto}}">{{departamento.nombre}}</option>
+                        {% endfor %}
+                    </select>
+                    <label>Departamento</label>
+                </div>
+                <div class="input-field col s12">
+                    <select name="filtro-grupos">
+                        <option value="" selected></option>
+                        {% for grupo in grupos %}
+                            <option value="{{grupo.auto}}">{{grupo.nombre}}</option>
+                        {% endfor %}
+                    </select>
+                    <label>Grupo/Familia</label>
+                </div>
+                <div class="input-field col s12">
+                    <select name="filtro-marcas">
+                        <option value="" selected></option>
+                        {% for marca in marcas %}
+                            <option value="{{marca.auto}}">{{marca.nombre}}</option>
+                        {% endfor %}
+                    </select>
+                    <label>Marca</label>
+                </div>
+                <div class="input-field col s12">
+                    <select name="filtro-categorias">
+                        <option value="" selected></option>
+                        {% for categoria in categorias %}
+                            {% if categoria.nombre == "Sub Producto" %}
+                                <option value="{{categoria.nombre}}">Producto Manufacturado</option>
+                            {% else %}
+                            <option value="{{categoria.nombre}}">{{categoria.nombre}}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <label>Categoria</label>
+                </div>
+                <div class="col s6">
+                    <h5 class="center">Datos del filtro de cantidades de venta</h5>
+                    <p>
+                        <input type="radio" name="filtro-dias" id="dias" value="dias" class="with-gap" checked>
+                        <label for="dias">Dias anteriores</label>
+                        <div class="input-field col s12">
+                            <select name="filtro-dia">
+                                <option value="0" selected>Hoy</option>
+                                <option value="1">Día anterior</option>
+                                <option value="7">Últimos 7 días</option>
+                                <option value="15">Últimos 15 días</option>
+                                <option value="30">Últimos 30 días</option>
+                                <option value="180">Últimos 6 meses</option>
+                                <option value="365">Últimos 12 meses</option>
+                            </select>
+                        </div>            
+                    </p>
+                    <p>
+                        <input type="radio" name="filtro-dias" id="fechas" value="fechas" class="with-gap">
+                        <label for="fechas">Por rango de fechas:</label>
+                    </p>
+                    <div class="col s6">
+                        <p>
+                            <label for="filtro-desde">Desde:</label>
+                            <input type="text" class="datepicker" name="filtro-desde">
+                        </p>
+                    </div>
+                    <div class="col s6">
+                        <p>
+                            <label for="filtro-hasta">Hasta:</label>
+                            <input type="text" class="datepicker" name="filtro-hasta">
+                        </p>
+                    </div>
+                </div>
+                <div class="col s6">
+                    <h5 class="center">Otras opciones</h5>
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="input-field col s12">
+                                <select name="tipo-reporte">
+                                    <option value="lista" selected>Listado</option>
+                                    <option value="grafica-total">Grafica | Total de ventas</option>
+                                    <option value="grafica-detallada">Grafica | Total de ventas detallado</option>
+                                </select>
+                                <label>Tipo de reporte</label>
+                            </div>
+                        </div>
+                        <div class="col s12">
+                            <div class="input-field col s12">
+                                <select name="orden">
+                                    <option value="mas-vendidos">Más vendidos</option>
+                                    <option value="menos-vendidos">Menos vendidos</option>
+                                    <option value="orden-abc" selected>Orden alfabético</option>
+                                </select>
+                                <label>Orden</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="submit" value="Generar" class="waves-effect waves-light btn">
+        </form>
+    </div>
+{% endblock content %}
+
+
+{% block script %}
+    <script>
+        $('.datepicker').pickadate({
+            selectMonths: true, // Creates a dropdown to control month
+            selectYears: 15, // Creates a dropdown of 15 years to control year,
+            today: 'Hoy',
+            clear: 'Limpiar',
+            close: 'Aceptar',
+            closeOnSelect: true, // Close upon selecting a date,
+            format: 'yyyy-mm-dd',
+            firstDay: true
+        });
+    </script>
+{% endblock script %}
+    
