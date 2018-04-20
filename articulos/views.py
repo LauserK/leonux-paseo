@@ -204,10 +204,7 @@ class ArticuloReporteView(LoginRequiredMixin, View):
                 for deposito in depositos:
                     articulo_objeto["depositos"].append(deposito)
 
-                query = "SELECT SUM(cantidad) as cantidad FROM ventas_detalle WHERE auto_producto = %s AND fecha >= %s AND fecha <= %s GROUP BY auto_producto" % (articulo["auto"], desde, hasta)
-                print(query)
-                # Calculamos las cantidades vendidas
-                cursor.execute(query)
+                cursor.execute("SELECT SUM(cantidad) as cantidad FROM ventas_detalle WHERE auto_producto = %s AND fecha >= %s AND fecha <= %s GROUP BY auto_producto", [articulo["auto"], desde, hasta])
                 try:
                     cantidad = dictfetchall(cursor)[0]
                     articulo_objeto["cantidad_vendida"] = int(cantidad["cantidad"])
@@ -235,10 +232,10 @@ class ArticuloReporteView(LoginRequiredMixin, View):
         }
 
         if tipo_reporte == "lista":
-            template   = "reporte_articulo_lista.html"
+            template   = "reportes/reporte_articulo_lista.html"
             return render(request, template, ctx)
         elif tipo_reporte == "grafica-total":
-            template   = "reporte_articulo_grafico_total.html"
+            template   = "reportes/reporte_articulo_grafico_total.html"
             return render(request, template, ctx)
 
        # pdf = render_to_pdf(template, ctx)
