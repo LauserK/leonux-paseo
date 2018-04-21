@@ -19,11 +19,11 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
-class HomeView(LoginRequiredMixin, View):
+class ReporteMenuView(LoginRequiredMixin, View):
     login_url = '/login/'
     def get(self, request):
         ctx = {}
-        template   = "index.html"
+        template   = "menus/reportes.html"
         return render(request, template, ctx)
 
 class LoginView(View):

@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PASEO78 INFORMES {% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'css/materialize.min.css' %}"  media="screen,projection"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper orange lighten-2">
+            <a href="#" class="brand-logo center">PASEO78 INFORMES</a>
+        </div>
+    </nav>
+
+    <div class="row">
+        <div class="col s2 black">
+            {% if user.is_authenticated %}
+            <ul class="side-nav fixed" style="top: 64px !important;" id="mobile-demo">
+                <li>
+                    <a href="{% url 'home' %}" class="waves-effect waves-blue">
+                        <i class="material-icons">home</i> Inicio
+                    </a>
+                </li>
+                <li>
+                    <a href="/reportes" class="waves-effect waves-blue">
+                        <i class="material-icons">assignment</i> Reportes
+                    </a>
+                </li>
+                <li>
+                    <a href="/accounts/logout" class="waves-effect waves-blue">
+                        <i class="material-icons">exit_to_app</i> Cerrar sesión
+                    </a>
+                </li>
+            </ul>
+            {% endif %}
+        </div>
+
+        <!-- MAIN VIEW REPORTES -->
+        <div class="col s10">
+            <div class="container">
+                {% block content %}
+
+                {% endblock content %}
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/materialize.js' %}"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('select').material_select();
+        });
+    </script>
+
+    {% block script %}
+
+    {% endblock script %}
+
+</body>
+</html>

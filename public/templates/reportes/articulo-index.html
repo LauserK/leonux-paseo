@@ -1,8 +1,8 @@
-{% extends 'base.html' %}
+{% extends 'base-sidenav.html' %}
 
 {% block content %}
     <div class="row">
-        <form method="POST" class="col s10 offset-s1 center-align">
+        <form method="POST" class="col s12 offset-s1 center-align">
             {% csrf_token %}
             <div class="row card">
                 <div class="col s12 center">
@@ -80,7 +80,7 @@
                                 <option value="180">Últimos 6 meses</option>
                                 <option value="365">Últimos 12 meses</option>
                             </select>
-                        </div>            
+                        </div>
                     </p>
                     <p>
                         <input type="radio" name="filtro-dias" id="fechas" value="fechas" class="with-gap">
@@ -145,4 +145,3 @@
         });
     </script>
 {% endblock script %}
-    

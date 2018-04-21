@@ -6,19 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>PASEO78 INFORMES {% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <link type="text/css" rel="stylesheet" href="{% static 'css/materialize.min.css' %}"  media="screen,projection"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
     <nav>
         <div class="nav-wrapper orange lighten-2">
-            <a href="#" class="brand-logo center">PASEO78 INFORMES</a>
-            {% if user.is_authenticated %}
-            <ul class="right">
-                <li><a href="{% url 'home' %}">Inicio</a></li>
-                <li><a href="/accounts/logout">Cerrar sesión</a></li>
-            </ul>
-            {% endif %}
+            <a href="#" class="brand-logo center">PASEO78 INFORMES</a>            
         </div>
     </nav>
 
