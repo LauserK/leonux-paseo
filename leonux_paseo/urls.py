@@ -18,8 +18,8 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from articulos import urls as articulos_urls
 from django.contrib.auth import urls as auth_urls
-from articulos.views import LoginView, ReporteMenuView
-
+from articulos.views import ReporteMenuView
+from usuarios.views import LoginView
 urlpatterns = [
     url(r'^$', ReporteMenuView.as_view(), name='home'),
     url(r'^reportes/', include(articulos_urls, namespace='reportes')),
