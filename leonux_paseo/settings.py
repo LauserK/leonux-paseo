@@ -87,18 +87,18 @@ else:
     DATABASES = {
         'leonux': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': '00000001',
-            'USER': 'root',
-            'PASSWORD': '',
-            'HOST': '127.0.0.1',
+            'NAME': os.environ.get('LEONUX_DB_NAME', '00000001'),
+            'USER':os.environ.get('LEONUX_DB_USER', 'root'),
+            'PASSWORD': os.environ.get('LEONUX_DB_PASSWORD', ''),
+            'HOST': os.environ.get('LEONUX_DB_HOST', '127.0.0.1'),
             'PORT': '3306',
         },
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'report-system',
-            'USER': 'root',
-            'PASSWORD': '',
-            'HOST': '127.0.0.1',
+            'NAME': os.environ.get('REPORTES_DB_NAME', 'report-system'),
+            'USER':os.environ.get('REPORTES_DB_USER', 'root'),
+            'PASSWORD': os.environ.get('REPORTES_DB_PASSWORD', ''),
+            'HOST': os.environ.get('REPORTES_DB_HOST', '127.0.0.1'),
             'PORT': '3306',
         }
     }
