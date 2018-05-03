@@ -24,7 +24,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'articulos'
+    'articulos',
+    'usuarios'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -155,3 +156,5 @@ else:
     MEDIA_ROOT= "C:/xampp/htdocs/mediar"
 
 LOGIN_REDIRECT_URL = '/'
+
+AUTH_USER_MODEL = 'usuarios.User'

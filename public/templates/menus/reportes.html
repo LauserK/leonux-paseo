@@ -1,0 +1,26 @@
+{% extends "base-sidenav.html" %}
+
+{% block content %}
+    <!-- MAIN VIEW REPORTES -->
+    <div class="col s10">
+        <div class="container">
+            <div class="row">
+                <div class="col s12">
+                    <h5 class="center-align">LISTA DE REPORTES DISPONIBLES</h5>
+                </div>
+                <div class="row">
+                    {% for reporte in reportes %}
+                        <div class="col s12 m4 center-align">
+                            <a href="{{reporte.get_url}}" class="orange-text">
+                                <i class="large material-icons">{{reporte.icono}}</i>
+                                <br/>
+                                <strong>{{reporte.nombre}}</strong>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

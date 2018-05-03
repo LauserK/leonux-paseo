@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View, TemplateView
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from usuarios.models import User
 from django.core.urlresolvers import reverse
 from django.http import JsonResponse, HttpResponse
 from django.db import connection, connections
 from datetime import datetime, timedelta
-from .utils import render_to_pdf
+from .models import Reporte
+from django.http import Http404
 import json
 
 
@@ -19,58 +20,23 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
-class HomeView(LoginRequiredMixin, View):
+class ReporteMenuView(LoginRequiredMixin, View):
     login_url = '/login/'
     def get(self, request):
-        ctx = {}
-        template   = "index.html"
-        return render(request, template, ctx)
-
-class LoginView(View):
-    def get(self, request):
-        ctx = {}
-        template   = "login.html"
-        return render(request, template, ctx)
-
-    def post(self, request):
-        template_name = "login.html"
-        mensaje       = ""
-
-        usuario       = request.POST.get("usuario")
-        contrasena    = request.POST.get("clave")
-
-        if not usuario and not contrasena:
-            mensaje = "No se deben dejar campos vacios"
-        else:
-            user = authenticate(username=usuario, password=contrasena)
-            if user is not None:
-                login(request, user)
-                return redirect('/')
-            else:
-                # registrar con datos de leonux
-                with connections['leonux'].cursor() as cursor:
-                    cursor.execute("SELECT nombre, codigo, clave FROM usuarios WHERE codigo = %s AND clave = %s", [usuario, contrasena])
-                    usuario_leonux     = cursor.fetchone()
-                    cursor.close()
-
-                    if usuario_leonux is not None:
-                        # Crear usuario
-                        new_user            = User.objects.create_user(usuario_leonux[1], 'it@grupopaseo.com', usuario_leonux[2])
-                        new_user.first_name = usuario_leonux[0]
-                        new_user.save()
-
-                        login(request, new_user)
-                        return redirect('/')
-
+        reportes = request.user.tipo_usuario.reportes.all()
         ctx = {
-            "mensaje": mensaje
+            "reportes":reportes
         }
-        template   = "login.html"
+        template   = "menus/reportes.html"
         return render(request, template, ctx)
 
 class ArticuloReporteView(LoginRequiredMixin, View):
     login_url = '/login/'
     def get(self, request):
+        if not request.user.tipo_usuario.reportes.filter(url="articulos").exists():
+            raise Http404("NO TIENES PERMISOS PARA VISUALIZAR ESTA PÁGINA")
+
+
         with connections['leonux'].cursor() as cursor:
             # Obtener los proveedores
             cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE estatus = 'Activo' ORDER BY razon_social")
