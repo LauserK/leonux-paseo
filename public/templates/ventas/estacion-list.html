@@ -1,0 +1,44 @@
+{% extends "base-sidenav.html" %}
+
+{% block content %}
+    <!-- MAIN VIEW REPORTES -->
+    <div class="col s10">
+        <div class="">
+            <div class="row">
+                <div class="col s12">
+                    <h5 class="center-align">ESTACIONES</h5>
+                    <br/>
+                    <div class="col s12 right-align">
+                        <a href="{% url 'ventas:estaciones-add' %}" class="waves-effect waves-light btn orange">AGREGAR ESTACIÓN</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Numero</th>
+                                <th>Serial</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>                            
+                            {% for estacion in estaciones %}
+                                <tr>
+                                    <td>{{estacion.numero}}</td>
+                                    <td>{{estacion.serial}}</td>
+                                    <td>
+                                        <a href="{% url 'ventas:estaciones-edit' estacion.numero %}" class="green-text"><i class="material-icons">edit</i></a>
+                                        <a href="{% url 'ventas:estaciones-delete' estacion.numero %}" class="red-text"><i class="material-icons">delete</i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

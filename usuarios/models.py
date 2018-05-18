@@ -7,5 +7,8 @@ class TipoUsuario(models.Model):
     nombre   = models.CharField(max_length=50)
     reportes = models.ManyToManyField(Reporte, blank=True)
 
+    def __unicode__(self):
+       return '%s - %s ' % (self.codigo, self.nombre)
+
 class User(AbstractUser):
     tipo_usuario = models.ForeignKey(TipoUsuario, blank=True, null=True)
