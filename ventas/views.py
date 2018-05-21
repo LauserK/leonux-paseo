@@ -124,4 +124,145 @@ class EstacionesDestroyView(LoginRequiredMixin, View):
         }
 
         return render(request, "ventas/estacion-form.html", ctx)
-    
+
+class DispositivoView(View):
+    """
+    Muestra una lista de los punto de ventas
+    """
+    login_url = '/login/'
+    def get(self, request):
+
+        dispositivos = PuntoVentaDispositivo.objects.all()
+        estaciones   = Estacion.objects.all()
+
+        ctx = {
+            "dispositivos": dispositivos,
+            "estaciones": estaciones
+        }
+
+        return render(request, "ventas/dispositivo-list.html", ctx)
+
+class DispositivoEditView(LoginRequiredMixin, View):
+    """
+    Muestra un formulario para editar un punto de venta
+    """
+    login_url = '/login/'
+
+    def get(self, request, dispositivo_id):
+        dispositivo = get_object_or_404(PuntoVentaDispositivo, numero=dispositivo_id)
+        estaciones   = Estacion.objects.all()
+
+        ctx = {
+            "dispositivo": dispositivo,
+            "estaciones": estaciones,
+            "action": "edit"
+        }
+
+        return render(request, "ventas/dispositivo-form.html", ctx)
+
+    def post(self, request, dispositivo_id):
+        numero   = request.POST.get("numero_dispositivo")
+        serial   = request.POST.get("serial_dispositivo")
+        estacion = request.POST.get("numero_estacion")
+
+        dispositivo = get_object_or_404(PuntoVentaDispositivo, numero=dispositivo_id)
+        dispositivo.numero = numero
+        dispositivo.serial = serial
+
+        # get the station
+        estacion = Estacion.objects.get(numero=estacion)
+        
+        dispositivo.estacion = estacion
+
+
+        ctx = {
+            "mensaje": "El modelo ha sido modificado correctamente!",
+            "success": True,
+            "action": "saving"
+        }
+
+        try:
+            dispositivo.save()
+        except:
+            ctx["mensaje"] = "¡Ha ocurrido un error al intentar guardar la información!"
+            ctx["success"] = False
+        
+        return render(request, "ventas/dispositivo-form.html", ctx)
+
+
+class DispositivoAddView(LoginRequiredMixin, View):
+    """
+    Muestra formulario para agregar un nuevo punto de venta
+    """
+    login_url = '/login/'
+
+    def get(self, request):
+        estaciones = Estacion.objects.all()
+
+        ctx = {
+            "action":"create",
+            "estaciones":estaciones
+        }
+        return render(request, "ventas/dispositivo-form.html", ctx)
+
+    def post(self, request):
+        numero   = request.POST.get("numero_dispositivo")
+        serial   = request.POST.get("serial_dispositivo")
+        estacion = request.POST.get("numero_estacion")
+
+        dispositivo        = PuntoVentaDispositivo()
+        dispositivo.numero = numero
+        dispositivo.serial = serial
+
+        # get the station
+        estacion = Estacion.objects.get(numero=estacion)
+        
+        dispositivo.estacion = estacion
+        
+        ctx = {
+            "mensaje": "La estación ha sido registrada correctamente!",
+            "success": True,
+            "action": "saving"
+        }
+
+        try:
+            dispositivo.save()
+        except:
+            ctx["mensaje"] = "¡Ha ocurrido un error al intentar guardar la información!"
+            ctx["success"] = False
+        
+        return render(request, "ventas/dispositivo-form.html", ctx)
+
+class DispositivoDestroyView(LoginRequiredMixin, View):
+    """
+    Muestra pregunta para eliminar un punto de venta
+    """
+    login_url = '/login/'
+
+    def get(self, request, dispositivo_id):
+        dispositivo = get_object_or_404(PuntoVentaDispositivo, numero=dispositivo_id)
+
+        ctx = {
+            "mensaje": "¿Estás seguro de eliminar el punto de venta: %s?" % dispositivo.numero,
+            "success": False,
+            "action": "destroy"
+        }
+        return render(request, "ventas/dispositivo-form.html", ctx)
+
+    def post(self, request, dispositivo_id):
+        dispositivo = get_object_or_404(PuntoVentaDispositivo, numero=dispositivo_id)
+        dispositivo.delete()
+        
+        ctx = {
+            "mensaje": "El punto de venta ha sido eliminada correctamente!",
+            "success": True,
+            "action": "saving"
+        }
+
+        return render(request, "ventas/dispositivo-form.html", ctx)
+
+
+
+class PlatcoCSV(View):
+    def post(self, request):
+        pass

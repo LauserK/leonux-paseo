@@ -7,9 +7,9 @@
             <div class="row card">
                 <div class="col s12 center">
                     {% if action == 'edit' %}
-                        <h4>Editando estación: {{estacion.numero}} | {{estacion.serial}}</h4>
+                        <h4>Caja: {{dispositivo.estacion.numero}} PV: {{dispositivo.numero}} | {{dispositivo.serial}}</h4>
                     {% else %}
-                        <h4>Añadir nueva estación</h4>
+                        <h4>Añadir nuevo Punto de Venta</h4>
                     {% endif %}
                     <br/>
 
@@ -20,11 +20,23 @@
                 
                 {% if action == 'create' or action == 'edit' %}
                     <div class="input-field col s12">
-                        <input id="numero_estacion" name="numero_estacion" type="number" min="1" step="1" class="validate" value="{{estacion.numero}}" required>
-                        <label>Número de estación:</label>
+                        <select name="numero_estacion">                            
+                            {% for estacion in estaciones %}
+                                <option value="{{estacion.numero}}" 
+                                {% if dispositivo.estacion == estacion %}
+                                    selected
+                                {% endif %}
+                                    >Estación: {{estacion.numero}}</option>
+                            {% endfor %}                            
+                        </select>
+                        <label>Estación:</label>
                     </div>
                     <div class="input-field col s12">
-                        <input id="serial_estacion" name="serial_estacion"  type="text" class="validate" value="{{estacion.serial}}" required>
+                        <input id="numero_dispositivo" name="numero_dispositivo" type="number" min="1" step="1" class="validate" value="{{dispositivo.numero}}" required>
+                        <label>Número de punto de venta:</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="serial_dispositivo" name="serial_dispositivo"  type="text" class="validate" value="{{dispositivo.serial}}" required>
                         <label>Serial del equipo:</label>
                     </div>
                     
@@ -34,7 +46,7 @@
                         <input type="submit" value="Agregar" class="waves-effect waves-light btn green" style="margin-bottom:10px">
                     {% endif %}
                 {% elif action == 'saving' %}
-                    <a href="{% url 'ventas:estaciones' %}" class="waves-effect waves-light btn green" style="margin-bottom:10px">REGRESAR</a>
+                    <a href="{% url 'ventas:dispositivos' %}" class="waves-effect waves-light btn green" style="margin-bottom:10px">REGRESAR</a>
                 {% else %}
                     <div class="col s12">
                         <div class="row">
@@ -42,7 +54,7 @@
                                 <input type="submit" value="Eliminar" class="waves-effect waves-light btn red" style="margin-bottom:10px">
                             </div>
                             <div class="col s6">
-                                <a href="{% url 'ventas:estaciones' %}" class="waves-effect waves-light btn green" style="margin-bottom:10px">CANCELAR</a>
+                                <a href="{% url 'ventas:dispositivos' %}" class="waves-effect waves-light btn green" style="margin-bottom:10px">CANCELAR</a>
                             </div>
                         </div>
                     </div>
@@ -52,3 +64,12 @@
         </form>
     </div>
 {% endblock content %}
+
+
+{% block script %}
+    <script>
+        $(document).ready(function(){
+            $('select').formSelect();
+        });
+    </script>
+{% endblock script %}
