@@ -264,12 +264,14 @@ class DispositivoDestroyView(LoginRequiredMixin, View):
 
         return render(request, "ventas/dispositivo-form.html", ctx)
 
-
-
 class PlatcoCSVAddView(LoginRequiredMixin, View):
+    """
+    Subir archivo .CSV generado en la plataforma de platco
+    """
     login_url = '/login/'
     def get(self, request):
         return render(request, "ventas/platco-csv-form.html", {})
+
     def post(self, request):
         fecha = datetime.datetime.strptime(request.POST.get("fecha"), "%d-%m-%Y").date()
         banco = request.POST.get("banco")
@@ -306,3 +308,14 @@ class PlatcoCSVAddView(LoginRequiredMixin, View):
             archivo.save()
 
         return render(request, "ventas/platco-csv-form.html", ctx)
+
+class JornadaVerifyView(LoginRequiredMixin, View):
+    def get(self, request):
+        estaciones   = Estacion.objects.all()
+        ctx = {
+            "estaciones":estaciones
+        }
+        return render(request, "ventas/jornada-form.html", ctx)
+
+    def post(self, request):
+        pass

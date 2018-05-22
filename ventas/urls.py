@@ -1,12 +1,14 @@
 from django.conf.urls import url
-from .views import HomeView, EstacionesView, EstacionesEditView, EstacionesAddView, EstacionesDestroyView, DispositivoView, DispositivoEditView, DispositivoAddView, DispositivoDestroyView, PlatcoCSVAddView
+from .views import HomeView, EstacionesView, EstacionesEditView, EstacionesAddView, EstacionesDestroyView, DispositivoView, DispositivoEditView, DispositivoAddView, DispositivoDestroyView, PlatcoCSVAddView, JornadaVerifyView
 
 urlpatterns = [
     # Home ventas
     url(r'^$', HomeView.as_view(), name='home'),
     # Subir CSV Platco
     url(r'^csv/upload/$', PlatcoCSVAddView.as_view(), name='upload-csv'),
-    
+    # Verificar jornada
+    url(r'^jornada/verify/$', JornadaVerifyView.as_view(), name='jornada-verify'),
+
     # Estacion
     url(r'^estaciones/$', EstacionesView.as_view(), name='estaciones'),
     url(r'^estaciones/(?P<estacion_id>\d+)/$', EstacionesEditView.as_view(), name='estaciones-edit'),
