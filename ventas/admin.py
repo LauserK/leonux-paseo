@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Estacion, PuntoVentaDispositivo, Jornada
+from .models import Estacion, PuntoVentaDispositivo, Jornada, PlatcoCSV
 
 
 @admin.register(Estacion)
@@ -12,4 +12,8 @@ class PuntoVentaDispositivoAdmin(admin.ModelAdmin):
 
 @admin.register(Jornada)
 class JornadaAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(PlatcoCSV)
+class PlatcoCSVAdmin(admin.ModelAdmin):
     pass

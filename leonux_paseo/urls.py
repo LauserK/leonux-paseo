@@ -21,6 +21,8 @@ from ventas import api_urls as ventas_api_urls, urls as ventas_urls
 from django.contrib.auth import urls as auth_urls
 from articulos.views import ReporteMenuView
 from usuarios.views import LoginView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     url(r'^$', ReporteMenuView.as_view(), name='home'),
@@ -32,4 +34,4 @@ urlpatterns = [
 
     # API URLS
     url(r'^api/v1/ventas/', include(ventas_api_urls, namespace='api_ventas')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

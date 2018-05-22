@@ -1,0 +1,66 @@
+{% extends 'base-sidenav.html' %}
+
+{% block content %}
+    <div class="row">
+        <form method="POST" class="col s12 offset-s1 center-align" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row card">
+                <div class="col s12 center">
+                    <h4>Subir archivo CSV</h4>
+
+                    {% if action == 'saving' or action == 'destroy' %}
+                        <p class="center-align {% if success == True %} green-text {% else %} red-text {% endif %}">{{mensaje}}</p>
+                    {% endif %}
+                </div>
+                
+                {% if not action == 'saving' %}
+                    <div class="input-field col s12">
+                        <input type="text" class="datepicker" name="fecha" required>
+                        <label>Fecha del reporte:</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <select name="banco">                            
+                            <option value="Mercantil">Banco Mercantil</option>
+                            <option value="Provincial" selected>Banco Provincial</option>
+                        </select>
+                        <label>Serial del equipo:</label>
+                    </div>                
+                    <div class="file-field col s12 input-field">
+                        <div class="btn orange">
+                            <span>Reporte .CSV</span>
+                            <input type="file" name="archivo" accept=".csv" required>
+                        </div>
+                        <div class="file-path-wrapper">
+                            <input class="file-path validate" type="text">
+                        </div>
+                    </div>
+                    <input type="submit" value="Subir" class="waves-effect waves-light btn green" style="margin-bottom:10px">
+                {% else %}
+                    <a href="{% url 'ventas:home' %}" class="waves-effect waves-light btn green" style="margin-bottom:10px">REGRESAR</a>
+                {% endif %}
+                
+            </div>            
+        </form>
+    </div>
+{% endblock content %}
+
+
+{% block script %}
+    <script>
+        $('.datepicker').pickadate({
+            selectMonths: true, // Creates a dropdown to control month
+            selectYears: 2, // Creates a dropdown of 15 years to control year,
+            today: 'Hoy',
+            clear: 'Limpiar',
+            close: 'Aceptar',
+            closeOnSelect: true, // Close upon selecting a date,
+            format: 'dd-mm-yyyy',
+            firstDay: true,
+            onStart: function() {
+                var date = new Date();
+                this.set('select', [date.getFullYear(), date.getMonth() + 1, date.getDate()]);
+            }
+        });
+    </script>
+{% endblock script %}
+    

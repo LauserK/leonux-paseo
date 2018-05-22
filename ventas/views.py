@@ -2,9 +2,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+import csv
+import codecs
+import datetime
 
 # Import Models
-from .models import Estacion, PuntoVentaDispositivo, Jornada
+from .models import Estacion, PuntoVentaDispositivo, Jornada, PlatcoCSV
 
 class HomeView(LoginRequiredMixin,TemplateView):
     """
@@ -263,6 +266,43 @@ class DispositivoDestroyView(LoginRequiredMixin, View):
 
 
 
-class PlatcoCSV(View):
+class PlatcoCSVAddView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    def get(self, request):
+        return render(request, "ventas/platco-csv-form.html", {})
     def post(self, request):
-        pass
+        fecha = datetime.datetime.strptime(request.POST.get("fecha"), "%d-%m-%Y").date()
+        banco = request.POST.get("banco")
+
+        ctx = {
+            "mensaje": "El archivo .CSV ha sido subido correctamente!",
+            "success": True,
+            "action": "saving"
+        }
+
+        if request.POST and request.FILES:
+            csvfile = request.FILES['archivo']
+            reader = csv.reader(csvfile, delimiter=',')
+            
+            # Verificar si el archivo es del banco seleccionado
+            try:  
+                if not banco in list(reader)[0][0]:
+                    # Si no corresponde mostramos mensaje de error y detenemos
+                    ctx["mensaje"] = "El archivo no corresponde a la estructura del Banco %s" % banco
+                    ctx["success"] = False
+                    return render(request, "ventas/platco-csv-form.html", ctx)                    
+            except:pass
+        
+        # Verificar si ya existe un registro del dia y el banco
+        archivos = PlatcoCSV.objects.filter(fecha=fecha).filter(banco=banco)
+        if archivos:
+            archivos[0].archivo = request.FILES['archivo']
+            archivos[0].save()
+        else:
+            archivo         = PlatcoCSV()
+            archivo.archivo = request.FILES['archivo']
+            archivo.fecha   = fecha
+            archivo.banco   = banco
+            archivo.save()
+
+        return render(request, "ventas/platco-csv-form.html", ctx)

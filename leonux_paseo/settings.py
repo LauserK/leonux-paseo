@@ -151,10 +151,10 @@ else:
 # Media files
 if DEBUG == False:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'public/media')
-    MEDIA_URL = 'http://10.10.0.201/mediar/'
+    MEDIA_URL  = 'http://10.10.0.201/mediar/'
 else:
-    MEDIA_URL = 'http://localhost/mediar/'
-    MEDIA_ROOT= "C:/xampp/htdocs/mediar"
+    MEDIA_URL  = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'public/media')
 
 LOGIN_REDIRECT_URL = '/'
 
