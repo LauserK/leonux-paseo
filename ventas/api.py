@@ -191,7 +191,7 @@ class Articles(View):
                 return APIResponse(article, "article", True)
 
             # if is all articles of a group
-            cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto FROM `productos`WHERE estatus = 'Activo' AND auto_grupo = %s AND precio_pto != 0.00", [group])
+            cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto FROM `productos`WHERE estatus = 'Activo' AND auto_grupo = %s AND precio_pto != 0.00 ORDER BY nombre", [group])
             articles = dictfetchall(cursor)
 
         return APIResponse(articles, "article list", True)
