@@ -198,12 +198,17 @@ class Articles(View):
 
 class GetAllArticlesAccount(View):
     def post(self, request):
+        code = request.GET.get('client')
+        account = ""
         with connections['leonux'].cursor() as cursor:
             json_data = json.loads(request.body)
-            client  = json_data["client"]
-            # Get the last 5 digits of the client code and add zeros until the string len be 5
-            account = str(client["code"][-5:]).zfill(5)
-            print account
+            try:
+                client  = json_data["client"]
+                account = str(client["code"][-5:]).zfill(5)
+            except: pass
+
+            if code:
+                account = str(code[-5:]).zfill(5)
 
             cursor.execute("SELECT auto, auto_producto, nombre, codigo, cantidad, precio_item as precio_neto, tasa FROM pos_comandas WHERE cuenta = %s", [account])
             articles = dictfetchall(cursor)
