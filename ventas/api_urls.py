@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .api import Stations, Devices, Sessions, Tickets, Report, Groups, Articles, AddArticleAccount, RemoveArticleAccount, RemoveAllArticleAccount, GetAllArticlesAccount, GetClientByQueue, UpdateClientStatus
+from .api import Sections, Stations, Devices, Sessions, Tickets, Report, Groups, Articles, AddArticleAccount, RemoveArticleAccount, RemoveAllArticleAccount, GetAllArticlesAccount, GetClientByQueue, UpdateClientStatus, UpdateClientSection
 from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
@@ -11,7 +11,9 @@ urlpatterns = [
     url(r'^stations/(?P<station_id>\d+)/session/tickets/(?P<ticket_number>\d+)/$', Tickets.as_view(), name='sessions-tickets-api'),
 
     # POS IOS
+    url(r'^sections/$', csrf_exempt(Sections.as_view()), name='sections-api'),
     url(r'^clients/$', csrf_exempt(GetClientByQueue.as_view()), name='clients-api'),
+    url(r'^clients/update-section/$', csrf_exempt(UpdateClientSection.as_view()), name='clientss-api'),
     url(r'^clients/update/$', csrf_exempt(UpdateClientStatus.as_view()), name='clients-api'),
     url(r'^groups/$', csrf_exempt(Groups.as_view()), name='groups-api'),
     url(r'^articles/$', csrf_exempt(Articles.as_view()), name='articles-api'),

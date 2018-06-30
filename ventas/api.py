@@ -147,6 +147,14 @@ class Report(View):
 POS IOS SERVICES
 """
 
+class Sections(View):
+    def post(self, request):
+        with connections['leonux'].cursor() as cursor:
+            cursor.execute("SELECT auto, codigo, nombre FROM pos_secciones WHERE estatus = '1'")
+            sections = dictfetchall(cursor)
+
+        return APIResponse(sections, "section list", True)
+
 class Groups(View):
     def post(self, request):
         section = request.GET.get('section')
@@ -201,8 +209,9 @@ class GetAllArticlesAccount(View):
         code = request.GET.get('client')
         account = ""
         with connections['leonux'].cursor() as cursor:
-            json_data = json.loads(request.body)
+            
             try:
+                json_data = json.loads(request.body)
                 client  = json_data["client"]
                 account = str(client["code"][-5:]).zfill(5)
             except: pass
@@ -210,7 +219,7 @@ class GetAllArticlesAccount(View):
             if code:
                 account = str(code[-5:]).zfill(5)
 
-            cursor.execute("SELECT auto, auto_producto, nombre, codigo, cantidad, precio_item as precio_neto, tasa FROM pos_comandas WHERE cuenta = %s", [account])
+            cursor.execute("SELECT auto, auto_producto, nombre, codigo, cantidad, precio_item as precio_neto, tasa, precio_item*(1+tasa/100) as precio FROM pos_comandas WHERE cuenta = %s", [account])
             articles = dictfetchall(cursor)
 
         return APIResponse(articles, "article list", True)  
@@ -278,18 +287,30 @@ class AddArticleAccount(View):
 
 class RemoveArticleAccount(View):
     def post(self, request):
-        json_data    = json.loads(request.body)
-        article_data = json_data["article"]
+        auto = request.GET.get('auto')
+
+        if not auto:
+            try:
+                json_data    = json.loads(request.body)
+                auto = json_data["article"]["auto_row"]
+
+            except: pass
 
         with connections['leonux'].cursor() as cursor:
-            cursor.execute("DELETE FROM pos_comandas WHERE auto = %s", [article_data["auto_row"]])
+            cursor.execute("DELETE FROM pos_comandas WHERE auto = %s", [auto])
 
         return APIResponse(None, "removed", True)
 
 class RemoveAllArticleAccount(View):
     def post(self, request):
-        json_data    = json.loads(request.body)
-        client    = json_data["client"]
+        client = request.GET.get('client')
+
+        if not client:
+            try:
+                json_data    = json.loads(request.body)
+                client       = json_data["client"]
+            except:pass
+
         # Get the last 4 digits of the client code and add zeros until the string len be 5
         account    = str(client["code"][-5:]).zfill(5)
 
@@ -305,7 +326,7 @@ class GetClientByQueue(View):
         status  = request.GET.get('status') or '0'
 
         with connections['leonux'].cursor() as cursor:
-            cursor.execute("SELECT id, pos_turno.rif, pos_turno.razon_social, pos_turno.ci as codigo, pos_turno.nombre, clientes.auto FROM `pos_turno` INNER JOIN clientes ON clientes.codigo = pos_turno.ci WHERE seccion = %s AND pos_turno.estatus = %s", [section, status])
+            cursor.execute("SELECT id, pos_turno.rif, pos_turno.razon_social, pos_turno.ci as codigo, pos_turno.nombre, clientes.auto FROM `pos_turno` INNER JOIN clientes ON clientes.codigo = pos_turno.ci WHERE seccion = %s AND pos_turno.estatus = %s ORDER BY id ASC", [section, status])
             clients = dictfetchall(cursor)
 
         return APIResponse(clients, "client list", True)
@@ -316,4 +337,13 @@ class UpdateClientStatus(View):
         status = request.GET.get('status')
         with connections['leonux'].cursor() as cursor:
             cursor.execute("UPDATE pos_turno SET estatus = %s WHERE id = %s", [status, client])
+            return APIResponse(None, "updated", True)
+
+class UpdateClientSection(View):
+    def post(self, request):
+        client = request.GET.get('auto')
+        section = request.GET.get('section')
+
+        with connections['leonux'].cursor() as cursor:
+            cursor.execute("UPDATE pos_turno SET seccion = %s AND estatus = '0' WHERE id = %s", [section, client])
             return APIResponse(None, "updated", True)
