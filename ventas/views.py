@@ -2,9 +2,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import View, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import connection, connections
+from articulos.views import dictfetchall
+
 import csv
 import codecs
 import datetime
+import os
 
 # Import Models
 from .models import Estacion, PuntoVentaDispositivo, Jornada, PlatcoCSV
@@ -318,4 +322,76 @@ class JornadaVerifyView(LoginRequiredMixin, View):
         return render(request, "ventas/jornada-form.html", ctx)
 
     def post(self, request):
-        pass
+        fecha        = request.POST.get("fecha")
+        estacion     = request.POST.get("estacion")
+        dispositivo  = request.POST.get("dispositivo")
+        fecha_object = datetime.datetime.strptime(fecha, "%Y-%m-%d").date()
+
+        estacion = Estacion.objects.get(numero=estacion)
+
+        ticket_malos = []
+        ticket_no_csv = []
+
+        # Obtener datos de la base de datos de leonux
+        with connections['leonux'].cursor() as cursor:
+            cursor.execute("SELECT id, auto_usuario, codigo_usuario, nombre_usuario, fecha_alta as fecha FROM pos_jornadas_sesion WHERE estacion = %s AND fecha_alta = %s", [estacion.serial, fecha])
+            secciones = dictfetchall(cursor)
+
+            for sesion in secciones:
+                # Obtener datos del archivo CSV
+                platco       = PlatcoCSV.objects.filter(fecha=fecha_object)
+                if platco:
+                    archivo  = open(platco[0].archivo.path)
+                    reader   = csv.reader(archivo, delimiter=',')
+
+                    sql = "SELECT auto_documento, fecha, hora, importe, codigo_banco, codigo_operacion FROM `pos_jornadas_detalle` WHERE id_sesion = %s AND tipo != 'ING' AND tipo != 'RET'" % sesion["id"]                    
+                    cursor.execute(sql)
+                    tickets = dictfetchall(cursor)
+
+                    # Recorrer datos del csv
+                    i = 0  
+                    try:
+                        for ticket in tickets:                            
+                            for row in reader:
+                                if i > 4 and row[0] != "Totales":
+                                    if ticket["codigo_banco"] in row[5] and ticket["codigo_operacion"] in row[6]:
+                                        # EXISTE EL TICKET VERIFICAMOS EL MONTO
+                                        importe = float(ticket["importe"])
+                                        importe2 = float(row[9])
+                                       
+                                        if not importe == importe2:
+                                            ticket_malo = {                                                
+                                                "leonux": {
+                                                    "factura": ticket["auto_documento"],
+                                                    "fecha": ticket["fecha"],
+                                                    "hora": ticket["hora"],
+                                                    "importe": ticket["importe"],
+                                                    "codigo_banco": ticket["codigo_banco"],
+                                                    "codigo_operacion": ticket["codigo_operacion"]
+                                                },
+                                                "platco": {
+                                                    "terminal": row[0],
+                                                    "lote": row[1],
+                                                    "fecha": row[3],
+                                                    "tarjeta": row[5],
+                                                    "autorizacion": row[6],
+                                                    "importe": row[9],
+                                                }
+                                            }
+                                            ticket_malos.append(ticket_malo.copy())
+                                    else:
+                                        if i-4 == len(list(reader)):
+                                            ticket_malo = {
+                                                "factura": ticket["auto_documento"],
+                                                "fecha": ticket["fecha"],
+                                                "hora": ticket["hora"],
+                                                "importe": ticket["importe"],
+                                                "codigo_banco": ticket["codigo_banco"],
+                                                "codigo_operacion": ticket["codigo_operacion"]
+                                            }
+                                            ticket_no_csv.append(ticket_malo.copy())
+
+                                i = i + 1
+                    except Exception as e: print e
+
+        print ticket_malos

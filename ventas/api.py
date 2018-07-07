@@ -199,7 +199,7 @@ class Articles(View):
                 return APIResponse(article, "article", True)
 
             # if is all articles of a group
-            cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto FROM `productos`WHERE estatus = 'Activo' AND auto_grupo = %s AND precio_pto != 0.00 ORDER BY nombre", [group])
+            cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto, precio_pto*(1+tasa/100) as precio FROM `productos`WHERE estatus = 'Activo' AND auto_grupo = %s AND precio_pto != 0.00 ORDER BY nombre", [group])
             articles = dictfetchall(cursor)
 
         return APIResponse(articles, "article list", True)
@@ -207,7 +207,8 @@ class Articles(View):
 class GetAllArticlesAccount(View):
     def post(self, request):
         code = request.GET.get('client')
-        account = ""
+        account = request.GET.get('account')
+
         with connections['leonux'].cursor() as cursor:
             
             try:
@@ -216,7 +217,7 @@ class GetAllArticlesAccount(View):
                 account = str(client["code"][-5:]).zfill(5)
             except: pass
 
-            if code:
+            if code and code != "":
                 account = str(code[-5:]).zfill(5)
 
             cursor.execute("SELECT auto, auto_producto, nombre, codigo, cantidad, precio_item as precio_neto, tasa, precio_item*(1+tasa/100) as precio FROM pos_comandas WHERE cuenta = %s", [account])
@@ -226,13 +227,20 @@ class GetAllArticlesAccount(View):
 
 class AddArticleAccount(View):
     def post(self, request):
-        json_data = json.loads(request.body)
-
-        article_data   = json_data["article"]
-        client    = json_data["client"]
-        # Get the last 5 digits of the client code and add zeros until the string len be 5
-        account    = str(client["code"][-5:]).zfill(5)
+        account = request.GET.get("account")
+        article_code = request.GET.get("article")
+        article_quantity = request.GET.get("quantity")
         auto_nuevo = ""
+        code = ""
+        client = ""
+
+        if not account:
+            json_data      = json.loads(request.body)
+            article_code   = json_data["article"]["code"]
+            client         = json_data["client"]["code"]
+            article_quantity = json_data["article"]["quantity"]
+            # Get the last 5 digits of the client code and add zeros until the string len be 5
+            account        = str(client[-5:]).zfill(5)
 
         with connections['leonux'].cursor() as cursor:
             cursor.execute("SELECT auto FROM pos_cuentas WHERE cuenta = %s", [account])
@@ -257,7 +265,7 @@ class AddArticleAccount(View):
             """
             Add the article to the account
             """
-            cursor.execute("SELECT auto, nombre, codigo, auto_departamento, auto_grupo, auto_subgrupo, auto_tasa, precio_pto, tasa FROM productos WHERE codigo = %s", [article_data["code"]])
+            cursor.execute("SELECT auto, nombre, codigo, auto_departamento, auto_grupo, auto_subgrupo, auto_tasa, precio_pto, tasa FROM productos WHERE codigo = %s", [article_code])
             
             try:
                 article = dictfetchall(cursor)[0]
@@ -265,7 +273,7 @@ class AddArticleAccount(View):
                 return APIResponse(None, "article not exists", False)
             
             # Totals
-            quantity = "%.3f" % float(article_data["quantity"])
+            quantity = "%.3f" % float(article_quantity)
             amount_global = Decimal("%.2f" % round(article["precio_pto"] * Decimal(quantity),2))
             tax = Decimal("%.2f" % round(Decimal(round((article["precio_pto"] * article["tasa"] / 100),2)) * Decimal(quantity),2))
             total = amount_global + tax
@@ -304,15 +312,17 @@ class RemoveArticleAccount(View):
 class RemoveAllArticleAccount(View):
     def post(self, request):
         client = request.GET.get('client')
-
-        if not client:
+        account = request.GET.get('account')
+        
+        if not client and not account:
             try:
                 json_data    = json.loads(request.body)
-                client       = json_data["client"]
+                client       = json_data["client"]["code"]
             except:pass
 
-        # Get the last 4 digits of the client code and add zeros until the string len be 5
-        account    = str(client["code"][-5:]).zfill(5)
+        if client:
+            # Get the last 4 digits of the client code and add zeros until the string len be 5
+            account    = str(client[-5:]).zfill(5)
 
         with connections['leonux'].cursor() as cursor:
             cursor.execute("DELETE FROM pos_comandas WHERE cuenta = %s", [account])
@@ -345,5 +355,17 @@ class UpdateClientSection(View):
         section = request.GET.get('section')
 
         with connections['leonux'].cursor() as cursor:
-            cursor.execute("UPDATE pos_turno SET seccion = %s AND estatus = '0' WHERE id = %s", [section, client])
+            sql = "UPDATE pos_turno SET seccion = '%s', estatus = '0' WHERE id = %s" % (section, client)
+            print sql
+            cursor.execute(sql)
             return APIResponse(None, "updated", True)
+
+class UpdateArticleQuantity(View):
+    def post(self, request):
+        auto     = request.GET.get('article')
+        quantity = request.GET.get('quantity')
+        
+        with connections['leonux'].cursor() as cursor:
+            cursor.execute("UPDATE pos_comandas SET cantidad = %s WHERE auto = %s", [quantity, auto])
+            
+        return APIResponse(None, "updated", True)
