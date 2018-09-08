@@ -9,6 +9,7 @@ from django.http import JsonResponse, HttpResponse
 from django.db import connection, connections
 from datetime import datetime, timedelta
 from .models import Reporte
+from ventas.models import Estacion
 from django.http import Http404
 import json
 
@@ -207,3 +208,85 @@ class ArticuloReporteView(LoginRequiredMixin, View):
 
        # pdf = render_to_pdf(template, ctx)
         #return HttpResponse(pdf, content_type='application/pdf')
+
+class VentasReporteView(View):
+    def get(self, request):
+        if not request.user.tipo_usuario.reportes.filter(url="ventas").exists():
+            raise Http404("NO TIENES PERMISOS PARA VISUALIZAR ESTA PÁGINA")
+
+        ctx = {}
+        template = "reportes/ventas/ventas-index.html"
+        return render(request, template, ctx)
+
+    def post(self, request):
+        if not request.user.tipo_usuario.reportes.filter(url="ventas").exists():
+            raise Http404("NO TIENES PERMISOS PARA VISUALIZAR ESTA PÁGINA")
+
+        with connections['leonux'].cursor() as cursor:
+            # Query sin filtros
+            sql = "SELECT SUM(total) AS total, estacion FROM ventas WHERE documento_nombre = 'VENTA' "
+            filtros = ""
+
+            # Filtro de fechas para ventas
+            filtro_ventas = request.POST.get("filtro-dias") # dias || fechas
+            dias = 0
+            desde = ""
+            hasta = str(datetime.today().date()) # Por default hasta el dia de hoy
+
+            # si es por dias (Hoy, dia anterior, ultimos 15 dias, etc)
+            if filtro_ventas == "dias":
+                dias = request.POST.get("filtro-dia")
+                d = datetime.today() - timedelta(days=int(dias)) # Desde hoy descuenta los dias indicados
+                desde = str(d.date()) # Lo pasamos a string
+                if dias == "1": # Si la opcion es "Dia Anterior" solo mostramos los datos de ese dia especfico
+                    hasta = desde
+
+            elif filtro_ventas == "fechas": # Si es por rango de fechas
+                desde = request.POST.get("filtro-desde")
+                if request.POST.get("filtro-hasta") != "" and request.POST.get("filtro-hasta") is not None: # SI no se pasa una fecha es hasta hoy
+                    hasta = request.POST.get("filtro-hasta")
+
+            filtros = "AND fecha >= '%s' AND fecha <= '%s' " % (desde, hasta)
+            sql_completo = sql + filtros + " GROUP BY estacion ORDER by serie"        
+            cursor.execute(sql_completo)
+            ventas = dictfetchall(cursor)
+            
+            # Totales
+            total_venta = 0
+            total_creditos = 0
+            for venta in ventas:
+                cursor.execute("SELECT usuario, SUM(total) as total FROM ventas WHERE documento_nombre = 'VENTA' AND estacion = %s AND fecha >= %s AND fecha <= %s GROUP BY usuario", [venta["estacion"], desde, hasta])
+                usuarios = dictfetchall(cursor)
+
+                cursor.execute("SELECT usuario, SUM(total) as total FROM ventas WHERE signo = '-1' AND estacion = %s AND fecha >= %s AND fecha <= %s GROUP BY usuario", [venta["estacion"], desde, hasta])
+                creditos = dictfetchall(cursor)
+
+                try:
+                    venta["caja"]     = Estacion.objects.get(serial=venta["estacion"]).numero
+                    venta["usuarios"] = usuarios
+                    venta["creditos"] = creditos
+                except:pass
+                
+                total_venta = total_venta + venta["total"]
+
+                for credito in creditos:                    
+                    total_creditos = total_creditos + credito["total"]
+
+            cursor.close()
+            totales = {
+                "ventas": total_venta,
+                "creditos": total_creditos,
+                "total": total_venta - total_creditos
+
+            }
+
+        ctx = {
+            "ventas":ventas,
+            "desde":desde,
+            "fecha": str(datetime.today().date().strftime('%d-%m-%Y')),
+            "hasta":hasta,
+            "totales": totales
+        }
+        #template = "reportes/ventas/ventas-reporte-grafica.html"
+        template = "reportes/ventas/ventas-reporte-lista.html"
+        return render(request, template, ctx)
