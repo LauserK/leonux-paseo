@@ -174,6 +174,7 @@ class Articles(View):
         group = request.GET.get('group')
         article_code = request.GET.get('code')
         article_plu = request.GET.get('plu')
+        noPrice = request.GET.get('noPrice')
 
         with connections['leonux'].cursor() as cursor:
             # if is only one article by his code
@@ -199,7 +200,11 @@ class Articles(View):
                 return APIResponse(article, "article", True)
 
             # if is all articles of a group
-            cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto, precio_pto*(1+tasa/100) as precio FROM `productos`WHERE estatus = 'Activo' AND auto_grupo = %s AND precio_pto != 0.00 ORDER BY nombre", [group])
+            if noPrice == "1":
+                cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto, precio_pto*(1+tasa/100) as precio FROM `productos`WHERE estatus = 'Activo' AND auto_grupo = %s ORDER BY nombre", [group])
+            else:
+                cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto, precio_pto*(1+tasa/100) as precio FROM `productos`WHERE estatus = 'Activo' AND auto_grupo = %s AND precio_pto != 0.00 ORDER BY nombre", [group])
+
             articles = dictfetchall(cursor)
 
         return APIResponse(articles, "article list", True)
