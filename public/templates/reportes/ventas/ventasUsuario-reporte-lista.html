@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>REPORTE DE ARTÍCULOS</title>
+    <title>REPORTE DE ARTÍCULOS USUARIOS</title>
     <style>
         body{
             font-family: "Arial", "Times New Roman", sans-serif;
@@ -67,7 +67,7 @@
 </head>
 <body>
     
-    <h1>LISTADOS DE ARTÍCULOS</h1>
+    <h1>LISTADOS DE ARTÍCULOS USUARIO</h1>
     <div class="header">
         <div class="filtros">
             <p><span class="bold">Proveedor</span>: {{proveedor.razon_social}}</p>
@@ -102,26 +102,22 @@
                     </div>
                 </header>
                 <section class="depositos">
-                    <h3>DEPOSITOS ASOCIADOS AL ARTÍCULO</h3>
-                    {% if articulo.depositos|length > 0 %}
+                    <h3>USUARIOS ACTIVOS</h3>
+                    {% if articulo.usuarios|length > 0 %}
                         <table>
                             <tr style="text-align:center; font-weight: bold;">
                                 <td>NOMBRE</td>
-                                <td>CANTIDAD EXISTENTE</td>
+                                <td>CANTIDAD FACTURADA</td>
                             </tr>
-                            {% for almacen in articulo.depositos %}
+                            {% for usuario in articulo.usuarios %}
                                 <tr>
-                                    <td>{{almacen.nombre}}</td>
-                                    <td style="text-align:center;">{{almacen.fisica}}</td>
+                                    <td>{{usuario.nombre}}</td>
+                                    <td style="text-align:center;">{{usuario.cantidad}}</td>
                                 </tr>
-                            {% endfor %}
-                            <tr>
-                                <td>TOTAL:</td>
-                                <td style="text-align:center;">{{articulo.cantidad_depositos}}</td>
-                            </tr>
+                            {% endfor %}                            
                         </table>
                     {% else %}
-                        Este artículo no posee depositos
+                        Este artículo no ha sido facturado en el rango de fecha seleccionado
                     {% endif %}
                 </section>
                 <section class="grafica">
