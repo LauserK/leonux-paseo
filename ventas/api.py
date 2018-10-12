@@ -3,7 +3,7 @@ from django.views.generic import View
 from django.http import JsonResponse
 from django.db import connection, connections
 from articulos.views import dictfetchall
-import json, math
+import json, math, datetime
 from decimal import Decimal
 
 # Import Models
@@ -297,7 +297,6 @@ class AddArticleAccount(View):
             }]
         return APIResponse(ctx, "saved", True)
 
-
 class RemoveArticleAccount(View):
     def post(self, request):
         auto = request.GET.get('auto')
@@ -334,7 +333,6 @@ class RemoveAllArticleAccount(View):
 
         return APIResponse(None, "removed", True)
 
-
 class GetClientByQueue(View):
     def post(self, request):
         section = request.GET.get('section')
@@ -361,7 +359,6 @@ class UpdateClientSection(View):
 
         with connections['leonux'].cursor() as cursor:
             sql = "UPDATE pos_turno SET seccion = '%s', estatus = '0' WHERE id = %s" % (section, client)
-            print sql
             cursor.execute(sql)
             return APIResponse(None, "updated", True)
 
@@ -374,3 +371,83 @@ class UpdateArticleQuantity(View):
             cursor.execute("UPDATE pos_comandas SET cantidad = %s WHERE auto = %s", [quantity, auto])
             
         return APIResponse(None, "updated", True)
+
+class GenerateMovementDocument(View):
+    def post(self, request):
+        """
+        {
+            "articles": [{
+                "auto": "",
+                "codigo": "",
+                "nombre": "",
+                "cantidad": 10.000,
+                "cantidad_und": 240.000,
+            }],
+            "usuario": {
+                "auto": "",
+                "codigo": "",
+                "nombre": ""
+            },
+            "estacion": "",
+            "deposito_origen": {
+                "auto": "",
+                "codigo": "",
+                "nombre": ""
+            },
+            "deposito_destino": {
+                "auto": "",
+                "codigo": "",
+                "nombre": ""
+            }
+        }
+        """
+
+        try:
+            #data = json.loads(request.body)
+            data = json.loads(request.POST.get("json"))
+        except:
+             return APIResponse(None, "json not found", False)
+
+        with connections['leonux'].cursor() as cursor:
+            """
+            - get the auto for productos_movimientos
+            - get the documento on a_productos_movimientos_traslados
+            - insert productos_movimientos            
+            - update auto for productos_movimientos
+            - update documento for a_productos_movimientos_traslados
+            - for each article insert on productos_movimientos_detalle
+            """
+            # GET THE AUTO
+            cursor.execute("SELECT a_productos_movimientos + 1 AS auto FROM sistema_contadores")
+            auto_document = str(dictfetchall(cursor)[0]["auto"]).zfill(10)
+
+            # GET THE DOCUMENT
+            cursor.execute("SELECT a_productos_movimientos_traslados + 1 AS document FROM sistema_contadores")
+            document = str(dictfetchall(cursor)[0]["document"]).zfill(10)
+
+            # today
+            date = datetime.datetime.today().strftime('%Y-%m-%d')               
+            now = datetime.datetime.now()
+
+            # document
+            sql = "INSERT INTO `00000001`.`productos_movimientos` (`auto`, `documento`, `fecha`, `nota`, `estatus_anulado`, `usuario`, `codigo_usuario`, `hora`, `estacion`, `concepto`, `auto_concepto`, `codigo_concepto`, `auto_usuario`, `auto_deposito`, `codigo_deposito`, `deposito`, `auto_destino`, `codigo_destino`, `destino`, `tipo`, `renglones`, `documento_nombre`, `autorizado`, `total`) VALUES ('%s', '%s', '%s', '', '0', '%s', '%s', '%s', '%s', 'ENTRADAS DE MERCANCIA', '0000000005', 'ENTRADAS', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '03', '%s', 'TRANSFERENCIA', 'APLICACION MOVIMIENTOS', '0.00')" % (auto_document, document, date, data["usuario"]["nombre"], data["usuario"]["codigo"], str(now.hour).zfill(2) + ":" + str(now.minute).zfill(2), data["estacion"], data["usuario"]["auto"], data["deposito_origen"]["auto"], data["deposito_origen"]["codigo"], data["deposito_origen"]["nombre"], data["deposito_destino"]["auto"], data["deposito_destino"]["codigo"], data["deposito_destino"]["nombre"], len(data["articulos"]))
+            cursor.execute(sql)
+
+            # rows
+            if cursor.rowcount > 0:
+                for articulo in data["articulos"]:
+                    sql = "INSERT INTO `00000001`.`productos_movimientos_detalle` (`auto_documento`, `auto_producto`, `codigo`, `nombre`, `cantidad`, `cantidad_bono`, `cantidad_und`, `categoria`, `fecha`, `tipo`, `estatus_anulado`, `contenido_empaque`, `empaque`, `decimales`, `auto`, `costo_und`, `total`, `costo_compra`) VALUES ('%s', '%s', '%s', '%s', '%s', '0.000', '%s', '', '%s', '03', '0', '%s', 'EMPAQUE', '3', '0000000001', '0.00', '0.00', '0.00')" % (auto_document, articulo["auto"], articulo["codigo"], articulo["nombre"], articulo["cantidad"], articulo["cantidad_und"], date, articulo["contenido_empaque"])
+                    cursor.execute(sql)
+
+            # update contadores            
+            cursor.execute("UPDATE sistema_contadores SET a_productos_movimientos = %s, a_productos_movimientos_traslados = %s WHERE a_productos_movimientos = %s", [auto_document.lstrip("0"), document.lstrip("0"), int(auto_document.lstrip("0"))-1])
+
+            if not cursor.rowcount > 0:
+                pass
+
+        print "guardado"
+                
+        response = [{
+            "documento": document
+        }]
+        return APIResponse(response, "updated", True)

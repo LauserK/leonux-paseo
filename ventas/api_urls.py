@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from .api import Sections, Stations, Devices, Sessions, Tickets, Report, Groups, Articles, AddArticleAccount, RemoveArticleAccount, RemoveAllArticleAccount, GetAllArticlesAccount, GetClientByQueue, UpdateClientStatus, UpdateClientSection, UpdateArticleQuantity
+from .api import Sections, Stations, Devices, Sessions, Tickets, Report, Groups, Articles, AddArticleAccount, RemoveArticleAccount, RemoveAllArticleAccount, GetAllArticlesAccount, GetClientByQueue, UpdateClientStatus, UpdateClientSection, UpdateArticleQuantity, GenerateMovementDocument
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -23,4 +23,5 @@ urlpatterns = [
     url(r'^articles/updateQuantity/$', csrf_exempt(UpdateArticleQuantity.as_view()), name='articles-api'),
     url(r'^articles/remove/$', csrf_exempt(RemoveArticleAccount.as_view()), name='articles-api'),
     url(r'^articles/remove/all/$', csrf_exempt(RemoveAllArticleAccount.as_view()), name='articles-api'),
+    url(r'^articles/movement/$', csrf_exempt(GenerateMovementDocument.as_view()), name="articles-movements")
 ]
