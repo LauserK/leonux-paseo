@@ -143,15 +143,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 if DEBUG == False:
-    STATIC_ROOT = '/usr/shared/reportes/static/'
-    STATIC_URL = 'http://10.10.0.201/statir/'
+    STATIC_ROOT = '/var/www/reportes/static'
+    STATIC_URL = 'http://10.10.0.70/statir/'
 else:
     STATIC_URL = '/static/'
 
 # Media files
 if DEBUG == False:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'public/media')
-    MEDIA_URL  = 'http://10.10.0.201/mediar/'
+    MEDIA_URL  = 'http://10.10.0.70/mediar/'
 else:
     MEDIA_URL  = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'public/media')
