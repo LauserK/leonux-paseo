@@ -179,7 +179,7 @@ class Articles(View):
         with connections['leonux'].cursor() as cursor:
             # if is only one article by his code
             if article_code is not None:
-                cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto FROM `productos`WHERE estatus = 'Activo' AND codigo = %s", [article_code])
+                cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto, estatus_pesado FROM `productos` WHERE estatus = 'Activo' AND codigo = %s", [article_code])
                 
                 try:
                     article = dictfetchall(cursor)[0]
@@ -190,7 +190,7 @@ class Articles(View):
 
             # if is only one article by his plu
             if article_plu is not None:
-                cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto FROM `productos`WHERE estatus = 'Activo' AND plu = %s", [article_plu])
+                cursor.execute("SELECT auto, codigo, nombre, tasa, precio_pto AS precio_neto FROM `productos` WHERE estatus = 'Activo' AND plu = %s", [article_plu])
                 
                 try:
                     article = dictfetchall(cursor)[0]
