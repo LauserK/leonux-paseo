@@ -74,6 +74,14 @@ if DEBUG == False:
             'HOST': '10.10.0.199',
             'PORT': '3306',
         },
+        'celestes': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': '00000002',
+            'USER': 'root',
+            'PASSWORD': '123',
+            'HOST': '10.10.0.199',
+            'PORT': '3306',
+        },
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'report-system',
@@ -91,6 +99,14 @@ else:
             'USER':os.environ.get('LEONUX_DB_USER', 'root'),
             'PASSWORD': os.environ.get('LEONUX_DB_PASSWORD', ''),
             'HOST': os.environ.get('LEONUX_DB_HOST', '127.0.0.1'),
+            'PORT': '3306',
+        },
+        'celestes': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('LEONUX_DB_NAME_2', '00000002'),
+            'USER':os.environ.get('LEONUX_DB_USER_2', 'root'),
+            'PASSWORD': os.environ.get('LEONUX_DB_PASSWORD_2', ''),
+            'HOST': os.environ.get('LEONUX_DB_HOST_2', '127.0.0.1'),
             'PORT': '3306',
         },
         'default': {

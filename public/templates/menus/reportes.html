@@ -11,7 +11,7 @@
                 <div class="row">
                     {% for reporte in reportes %}
                         <div class="col s12 m4 center-align">
-                            <a href="{{reporte.get_url}}" class="orange-text">
+                            <a href="/{{company_id}}{{reporte.get_url}}" class="orange-text">
                                 <i class="large material-icons">{{reporte.icono}}</i>
                                 <br/>
                                 <strong>{{reporte.nombre}}</strong>

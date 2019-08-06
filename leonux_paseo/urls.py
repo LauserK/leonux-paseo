@@ -19,14 +19,15 @@ from django.contrib import admin
 from articulos import urls as articulos_urls
 from ventas import api_urls as ventas_api_urls, urls as ventas_urls
 from django.contrib.auth import urls as auth_urls
-from articulos.views import ReporteMenuView
+from articulos.views import ReporteCompanyView, ReporteMenuView
 from usuarios.views import LoginView
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    url(r'^$', ReporteMenuView.as_view(), name='home'),
-    url(r'^reportes/', include(articulos_urls, namespace='reportes')),
+    url(r'^$', ReporteCompanyView.as_view(), name='home'),
+    url(r'^(?P<company_id>\d+)/$', ReporteMenuView.as_view(), name='home'),
+    url(r'^(?P<company_id>\d+)/reportes/', include(articulos_urls, namespace='reportes')),
     url(r'^ventas/cierres/', include(ventas_urls, namespace='ventas')),
     url(r'^accounts/', include(auth_urls)),
     url(r'^login/$', LoginView.as_view(), name='login'),

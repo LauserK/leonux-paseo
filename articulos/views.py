@@ -22,11 +22,19 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
-class ReporteMenuView(LoginRequiredMixin, View):
+class ReporteCompanyView(LoginRequiredMixin, View):
     login_url = '/login/'
     def get(self, request):
+        ctx = {}
+        template   = "menus/company.html"
+        return render(request, template, ctx)
+
+class ReporteMenuView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    def get(self, request, company_id):
         reportes = request.user.tipo_usuario.reportes.all()
         ctx = {
+            "company_id": company_id,
             "reportes":reportes
         }
         template   = "menus/reportes.html"
@@ -34,12 +42,14 @@ class ReporteMenuView(LoginRequiredMixin, View):
 
 class ArticuloReporteView(LoginRequiredMixin, View):
     login_url = '/login/'
-    def get(self, request):
+    def get(self, request, company_id):
         if not request.user.tipo_usuario.reportes.filter(url="articulos").exists():
             raise Http404("NO TIENES PERMISOS PARA VISUALIZAR ESTA PÁGINA")
 
-
-        with connections['leonux'].cursor() as cursor:
+        cursor = connections['leonux'].cursor()        
+        if company_id == '2':            
+            cursor = connections['celestes'].cursor()
+        with cursor:
             # Obtener los proveedores
             cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE estatus = 'Activo' ORDER BY razon_social")
             proveedores = dictfetchall(cursor)
@@ -62,6 +72,7 @@ class ArticuloReporteView(LoginRequiredMixin, View):
             categorias = [{"nombre": "Bien de Servicio"},{"nombre": "Materia Prima"},{"nombre": "Producto Terminado"},{"nombre": "Uso Interno"},{"nombre": "Producto Manufacturado"}]
 
         ctx        = {
+            "company_id": company_id,
             "proveedores": proveedores,
             "departamentos": departamentos,
             "grupos": grupos,
@@ -73,7 +84,7 @@ class ArticuloReporteView(LoginRequiredMixin, View):
         template   = "reportes/articulo-index.html"
         return render(request, template, ctx)
 
-    def post(self, request):
+    def post(self, request, company_id):
         # Obtenemos los filtros del formulario
         auto_proveedor    = request.POST.get("filtro-proveedor")
         referencia        = request.POST.get("filtro-referencia")
@@ -84,7 +95,10 @@ class ArticuloReporteView(LoginRequiredMixin, View):
         tipo_reporte      = request.POST.get("tipo-reporte")
         tipo_orden        = request.POST.get("orden") # WIP
 
-        with connections['leonux'].cursor() as cursor:
+        cursor = connections['leonux'].cursor()        
+        if company_id == '2':            
+            cursor = connections['celestes'].cursor()
+        with cursor:
             # Filtros
             filtros = ""
 
@@ -189,6 +203,7 @@ class ArticuloReporteView(LoginRequiredMixin, View):
 
 
         ctx        = {
+            "company_id": company_id,
             "articulos": articulos_array,
             "proveedor": proveedor,
             "referencia": referencia,
@@ -212,7 +227,7 @@ class ArticuloReporteView(LoginRequiredMixin, View):
         #return HttpResponse(pdf, content_type='application/pdf')
 
 class VentasReporteView(View):
-    def get(self, request):
+    def get(self, request, company_id):
         if not request.user.tipo_usuario.reportes.filter(url="ventas").exists():
             raise Http404("NO TIENES PERMISOS PARA VISUALIZAR ESTA PÁGINA")
 
@@ -224,7 +239,10 @@ class VentasReporteView(View):
         if not request.user.tipo_usuario.reportes.filter(url="ventas").exists():
             raise Http404("NO TIENES PERMISOS PARA VISUALIZAR ESTA PÁGINA")
 
-        with connections['leonux'].cursor() as cursor:
+        cursor = connections['leonux'].cursor()        
+        if company_id == '2':            
+            cursor = connections['celestes'].cursor()
+        with cursor:
             # Query sin filtros
             sql = "SELECT SUM(total) AS total, estacion FROM ventas WHERE documento_nombre = 'VENTA' "
             filtros = ""
@@ -283,6 +301,7 @@ class VentasReporteView(View):
             }
 
         ctx = {
+            "company_id": company_id,
             "ventas":ventas,
             "desde":desde,
             "fecha": str(datetime.today().date().strftime('%d-%m-%Y')),
@@ -294,11 +313,14 @@ class VentasReporteView(View):
         return render(request, template, ctx)
 
 class VentaUsuarioReporteView(View):
-    def get(self, request):
+    def get(self, request, company_id):
         if not request.user.tipo_usuario.reportes.filter(url="articulos").exists():
             raise Http404("NO TIENES PERMISOS PARA VISUALIZAR ESTA PÁGINA")
 
-        with connections['leonux'].cursor() as cursor:
+        cursor = connections['leonux'].cursor()        
+        if company_id == '2':            
+            cursor = connections['celestes'].cursor()
+        with cursor:
             # Obtener los proveedores
             cursor.execute("SELECT auto, razon_social, ci_rif FROM proveedores WHERE estatus = 'Activo' ORDER BY razon_social")
             proveedores = dictfetchall(cursor)
@@ -321,6 +343,7 @@ class VentaUsuarioReporteView(View):
             categorias = [{"nombre": "Bien de Servicio"},{"nombre": "Materia Prima"},{"nombre": "Producto Terminado"},{"nombre": "Uso Interno"},{"nombre": "Producto Manufacturado"}]
 
         ctx = {
+            "company_id": company_id,
             "proveedores": proveedores,
             "departamentos": departamentos,
             "grupos": grupos,
@@ -331,7 +354,7 @@ class VentaUsuarioReporteView(View):
         template = "reportes/ventas/ventasUsuario-index.html"
         return render(request, template, ctx)
 
-    def post(self, request):
+    def post(self, request, company_id):
         # Obtenemos los filtros del formulario
         auto_proveedor    = request.POST.get("filtro-proveedor")
         referencia        = request.POST.get("filtro-referencia")
@@ -342,7 +365,10 @@ class VentaUsuarioReporteView(View):
         tipo_reporte      = request.POST.get("tipo-reporte")
         tipo_orden        = request.POST.get("orden") # WIP
 
-        with connections['leonux'].cursor() as cursor:
+        cursor = connections['leonux'].cursor()        
+        if company_id == '2':            
+            cursor = connections['celestes'].cursor()
+        with cursor:
             # Filtros
             filtros = ""
 
@@ -446,6 +472,7 @@ class VentaUsuarioReporteView(View):
 
 
         ctx        = {
+            "company_id": company_id,
             "articulos": articulos_array,
             "proveedor": proveedor,
             "referencia": referencia,
