@@ -168,7 +168,7 @@ class ArticuloReporteView(LoginRequiredMixin, View):
                 if request.POST.get("filtro-hasta") != "" and request.POST.get("filtro-hasta") is not None: # SI no se pasa una fecha es hasta hoy
                     hasta = request.POST.get("filtro-hasta")
 
-
+            total = 0.00
             # Damos formato a los datos
             articulos_array = []
             for articulo in articulos:
@@ -177,7 +177,8 @@ class ArticuloReporteView(LoginRequiredMixin, View):
                     "nombre": articulo["nombre"],
                     "depositos": [],
                     "cantidad_vendida": 0,
-                    "cantidad_depositos": 0.00
+                    "cantidad_depositos": 0.00,
+                    "monto_vendido":0.00
                 }
 
                 # Obtenemos los depositos
@@ -188,10 +189,12 @@ class ArticuloReporteView(LoginRequiredMixin, View):
                     articulo_objeto["depositos"].append(deposito)
                     articulo_objeto["cantidad_depositos"] = float(articulo_objeto["cantidad_depositos"]) + float(deposito["fisica"])                
 
-                cursor.execute("SELECT SUM(cantidad) as cantidad FROM ventas_detalle WHERE auto_producto = %s AND fecha >= %s AND fecha <= %s GROUP BY auto_producto", [articulo["auto"], desde, hasta])
+                cursor.execute("SELECT SUM(cantidad) as cantidad, SUM(total) AS total FROM ventas_detalle WHERE auto_producto = %s AND fecha >= %s AND fecha <= %s GROUP BY auto_producto", [articulo["auto"], desde, hasta])
                 try:
                     cantidad = dictfetchall(cursor)[0]
                     articulo_objeto["cantidad_vendida"] = int(cantidad["cantidad"])
+                    articulo_objeto["monto_vendido"] = float(cantidad["total"])
+                    total += float(cantidad["total"])
                 except:
                     pass
 
@@ -213,7 +216,8 @@ class ArticuloReporteView(LoginRequiredMixin, View):
             "categoria": categoria,
             "fecha": str(datetime.today().date().strftime('%d-%m-%Y')),
             "desde":desde,
-            "hasta":hasta
+            "hasta":hasta,
+            "total": total
         }
 
         if tipo_reporte == "lista":

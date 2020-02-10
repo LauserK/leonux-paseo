@@ -103,7 +103,8 @@
                 </header>
                 <section class="depositos">
                     <h3>DEPOSITOS ASOCIADOS AL ARTÍCULO</h3>
-                    {% if articulo.depositos|length > 0 %}
+                    <div style="display: flex; flex-direction: row;">   
+                        {% if articulo.depositos|length > 0 %}
                         <table>
                             <tr style="text-align:center; font-weight: bold;">
                                 <td>NOMBRE</td>
@@ -120,15 +121,21 @@
                                 <td style="text-align:center;">{{articulo.cantidad_depositos}}</td>
                             </tr>
                         </table>
-                    {% else %}
-                        Este artículo no posee depositos
-                    {% endif %}
+                        {% else %}
+                            Este artículo no posee depositos
+                        {% endif %}
+                        <div style="display:flex;width: 50%;text-align: right;flex-flow: column-reverse;">
+                            <span>Total Bs: {{articulo.monto_vendido}}</span>
+                        </div>
+                    </div>
+                    
                 </section>
                 <section class="grafica">
 
                 </section>
             </article>
         {% endfor %}
+        Total Bs: {{total}}
     </section>
 </body>
 </html>
