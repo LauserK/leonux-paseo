@@ -26,7 +26,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'articulos',
     'usuarios',
-    'ventas'
+    'ventas',
+    'celestes'
 ]
 
 MIDDLEWARE_CLASSES = [

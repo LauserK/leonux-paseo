@@ -17,6 +17,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from articulos import urls as articulos_urls
+from celestes import urls as celestes_urls
 from ventas import api_urls as ventas_api_urls, urls as ventas_urls
 from django.contrib.auth import urls as auth_urls
 from articulos.views import ReporteCompanyView, ReporteMenuView
@@ -30,6 +31,7 @@ urlpatterns = [
     url(r'^(?P<company_id>\d+)/reportes/', include(articulos_urls, namespace='reportes')),
     url(r'^ventas/cierres/', include(ventas_urls, namespace='ventas')),
     url(r'^accounts/', include(auth_urls)),
+    url(r'^celestes/', include(celestes_urls, namespace='celestes')),
     url(r'^login/$', LoginView.as_view(), name='login'),
     url(r'^admin/', admin.site.urls),
 
