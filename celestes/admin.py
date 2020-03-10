@@ -15,6 +15,7 @@ class ArticleAdmin(admin.ModelAdmin):
     inlines = (
        IngredientInline,
     )
+    ordering = ('name',)
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
