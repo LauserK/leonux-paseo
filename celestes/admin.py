@@ -16,6 +16,7 @@ class ArticleAdmin(admin.ModelAdmin):
        IngredientInline,
     )
     ordering = ('name',)
+    list_display = ('name', 'barcode', 'costPrice', 'sellPrice', 'isForSell')
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
