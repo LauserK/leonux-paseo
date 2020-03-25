@@ -4,6 +4,7 @@ from django.db import models
 from decimal import Decimal
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
+from datetime import datetime
 import math 
 
 class Ingredient(models.Model):
@@ -41,6 +42,7 @@ class MovementArticle(models.Model):
 	sign = models.CharField(max_length=1, default='+', help_text='"+" para sumar | "-" para restar')
 	quantity = models.DecimalField(default=0.00, max_digits=11, decimal_places=2)
 	reason = models.ForeignKey(MovementReason)
+	date = models.DateField(blank=True, default=datetime.now)
 
 	def __unicode__(self):
 		return "%s sign: %s q: %d" % (self.article.name, self.sign, self.quantity)
