@@ -13,7 +13,7 @@
                     <div class="col s12 center">
                         {% if articles_not_updated.length > 0 %}
                             <h5>Articulos no actualizados porque no existen</h5>
-                        {% else %}
+                        {% elif msg == "Realizado" %}
                             <h5>Procesado exitosamente!</h5>
                         {% endif %}
                         {% for article in articles_not_updated %}
