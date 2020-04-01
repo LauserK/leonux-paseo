@@ -96,6 +96,12 @@ class CalculateInventoryView(LoginRequiredMixin, View):
                 movement.date = date
                 movement.save()
 
+                print "-----------------------"
+                print "------- ARTICLE -------"
+                print "--%s--" % article_django.name
+                print "-----------------------"
+
+                """
                 #ingredientes menos
                 for ingrediente in article_django.ingredients.all():
                     movement = MovementArticle()
@@ -104,12 +110,21 @@ class CalculateInventoryView(LoginRequiredMixin, View):
                     movement.quantity = ingrediente.quantity
                     movement.reason = movimiento
                     movement.date = date
-                    movement.save()
+                    movement.save()                    
 
-                
-
+                    for ingredient1 in ingrediente.article.ingredients.all():
+                        print "hello"
+                        movement = MovementArticle()
+                        movement.article = ingredient1.article
+                        movement.sign = sign
+                        movement.quantity = ingredient1.quantity
+                        movement.reason = movimiento
+                        movement.date = date
+                        movement.save()
+                """
+                    
+            """
             # Actualizar storage
-
             articles = Article.objects.all()
 
             for article in articles:
@@ -124,6 +139,7 @@ class CalculateInventoryView(LoginRequiredMixin, View):
 
                 article.storageQuantity = total
                 article.save()
+            """
 
         ctx = {
             "msg": "Realizado",

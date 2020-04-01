@@ -16,9 +16,17 @@ class Ingredient(models.Model):
 		ingredientPrice = ingredientCostPrice * self.quantity
 		return "%s:%s - Cantidad: %s - Bs: %s" % (self.article.name, str(self.article.costPrice), str(self.quantity), str(ingredientPrice))    
 
+class ArticleType(models.Model):
+	name = models.CharField(max_length=50)
+
+	def __unicode__(self):
+		return self.name
+
+DEFAULT_ARTICLE_TYPE = 1
 class Article(models.Model):
 	barcode = models.CharField(max_length=30, help_text='Codigo usado para conectarse a leonux y hacer cambios al articulo', blank=True, null=True)
 	name = models.CharField(max_length=100)
+	article_type = models.ForeignKey(ArticleType, default=DEFAULT_ARTICLE_TYPE)
 	storageQuantity = models.DecimalField(default=0.00, max_digits=11, decimal_places=2)
 	costPrice = models.DecimalField(default=0.00, max_digits=11, decimal_places=2)
 	packageQuantity = models.DecimalField(default=1000, max_digits=11, decimal_places=2, help_text='Monto para realizar el calculo del precio del gr del articulo (CostPrice)/(PackageQuantity)')
@@ -27,6 +35,7 @@ class Article(models.Model):
 	ingredients = models.ManyToManyField(Ingredient, blank=True, related_name='article_ingredient')    
 	secondaryPrice = models.DecimalField(default=0.00, max_digits=11, decimal_places=2)
 	isForSell = models.BooleanField(default=False, help_text='El Articulo es para la venta?')
+	cookingTime = models.IntegerField(blank=True, default=0, help_text='Tiempo de coccion en segundos')
 
 	def __unicode__(self):
 		return self.name
@@ -46,6 +55,10 @@ class MovementArticle(models.Model):
 
 	def __unicode__(self):
 		return "%s sign: %s q: %d" % (self.article.name, self.sign, self.quantity)
+
+class DocumentMovement(models.Model):
+	date = models.DateField(default=datetime.now)
+	movements = models.ManyToManyField(MovementArticle, blank=True)	
 
 class Currency(models.Model):
 	name = models.CharField(max_length=20)
@@ -201,3 +214,50 @@ def update_currency(sender, instance, **kwargs):
 					article.sellPrice = -(-price_with_tax//config.roundPriceBy)*config.roundPriceBy
 
 					article.save()
+
+@receiver(post_save, sender=MovementArticle, dispatch_uid="save_movements")
+def update_movement_article(sender, instance, **kwargs):
+	article = instance.article
+	movements = MovementArticle.objects.filter(article=article)
+	movimiento = MovementReason.objects.get(pk=4)
+	ARTICLE_TYPE_SERVICE = ArticleType.objects.get(pk=5)
+	ARTICLE_TYPE_FINAL_PRODUCT = ArticleType.objects.get(pk=3)
+	total = Decimal(0.00)
+
+	# Make movements
+	if instance.sign == "+":
+		# Sumando	
+
+		if article.article_type == ARTICLE_TYPE_FINAL_PRODUCT:
+			for ingrediente in article.ingredients.all():
+				if ingrediente.article.article_type != ARTICLE_TYPE_SERVICE:				
+					movement = MovementArticle()
+					movement.article = ingrediente.article
+					movement.sign = '-'
+					movement.quantity = ingrediente.quantity * Decimal(instance.quantity)
+					movement.reason = movimiento
+					movement.date = instance.date
+					movement.save() 
+	else:
+		# Restando
+		if article.storageQuantity <= 0:
+			for ingrediente in article.ingredients.all():
+				if ingrediente.article.article_type != ARTICLE_TYPE_SERVICE:
+					movement = MovementArticle()
+					movement.article = ingrediente.article
+					movement.sign = '-'
+					movement.quantity = ingrediente.quantity * Decimal(instance.quantity)
+					movement.reason = movimiento
+					movement.date = instance.date
+					movement.save()    
+
+	# Caculate inventories
+	for movement in movements:
+		if movement.sign == "+":
+			total += Decimal(movement.quantity)
+		else:
+			total -= Decimal(movement.quantity)
+
+	article.storageQuantity = total
+	article.save()
+	print "Guardado"
