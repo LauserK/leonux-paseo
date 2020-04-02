@@ -20,7 +20,8 @@ class ArticleAdmin(admin.ModelAdmin):
        IngredientInline,
     )
     ordering = ('name',)
-    list_display = ('name', 'barcode', 'costPrice', 'sellPrice', 'isForSell')
+    list_display = ('name', 'barcode', 'costPrice', 'sellPrice', 'isForSell', 'article_type')
+    list_filter = ('article_type',)
 
 @admin.register(DocumentMovement)
 class DocumentMovementAdmin(admin.ModelAdmin):
