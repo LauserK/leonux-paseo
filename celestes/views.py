@@ -82,15 +82,14 @@ class CalculateInventoryView(LoginRequiredMixin, View):
             date = datetime.strptime(fecha, "%Y-%m-%d")           
             MovementArticle.objects.filter(date=date).delete()
 
-            movimiento = MovementReason.objects.get(pk=4)
-            sign = '-'
+            movimiento = MovementReason.objects.get(pk=4)            
             for article in articles_updated:
                 article_django = Article.objects.get(barcode=article["code"])  
                 quantity = article['quantity']                
 
                 movement = MovementArticle()
                 movement.article = article_django
-                movement.sign = sign
+                movement.sign = '-'
                 movement.quantity = quantity
                 movement.reason = movimiento
                 movement.date = date
