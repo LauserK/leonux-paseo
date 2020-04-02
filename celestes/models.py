@@ -228,7 +228,13 @@ def update_movement_article(sender, instance, **kwargs):
 	if instance.sign == "+":
 		# Sumando	
 
-		if article.article_type == ARTICLE_TYPE_FINAL_PRODUCT:
+		"""
+		Al sumar a un articulo compuesto quiere decir que fue producido, osea se necesita disminuir 
+		el inventario usado para la produccion, a a restar los ingredientes unicamente cuando sea 
+		un articulo final y su almacenamiento sea mayor o igual a 0, ya que cuando es negativo quiere 
+		decir que ya se descontaron los ingredientes anteriormente
+		"""
+		if article.article_type == ARTICLE_TYPE_FINAL_PRODUCT and article.storageQuantity >= 0:
 			for ingrediente in article.ingredients.all():
 				if ingrediente.article.article_type != ARTICLE_TYPE_SERVICE:				
 					movement = MovementArticle()
