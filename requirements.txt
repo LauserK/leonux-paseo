@@ -1,7 +1,7 @@
 Django==1.11
 gunicorn==19.7.1
 html5lib==1.0b10
-httplib2==0.11.3
+httplib2==0.18.0
 Pillow==5.1.0
 PyPDF2==1.26.0
 pytz==2018.4
