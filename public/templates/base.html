@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PASEO78 INFORMES {% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link type="text/css" rel="stylesheet" href="{% static 'css/materialize.min.css' %}"  media="screen,projection"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper orange lighten-2">
+            <a href="#" class="brand-logo center">PASEO78 INFORMES</a>            
+        </div>
+    </nav>
+
+
+    {% block content %}
+
+    {% endblock content %}
+
+    <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/materialize.js' %}"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('select').material_select();
+        });
+    </script>
+
+    {% block script %}
+
+    {% endblock script %}
+
+</body>
+</html>

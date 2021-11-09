@@ -1,0 +1,92 @@
+{% extends 'base-sidenav.html' %}
+
+{% block content %}
+    <div class="row">
+        <form method="POST" class="col s12 offset-s1 center-align" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row card">
+                <div class="col s12 center">
+                    <h4>Verificar jornada</h4>
+
+                    {% if action == 'saving' or action == 'destroy' %}
+                        <p class="center-align {% if success == True %} green-text {% else %} red-text {% endif %}">{{mensaje}}</p>
+                    {% endif %}
+                </div>
+                
+                {% if not action == 'saving' %}
+                    <div class="input-field col s12">
+                        <input type="text" class="datepicker" name="fecha" required>
+                        <label>Fecha de la jornada:</label>
+                    </div>
+                    <div class="input-field col s12" id="estacion">
+                        <select name="estacion">                                                        
+                            {% for estacion in estaciones %}
+                                <option value="{{estacion.numero}}">Caja: {{estacion.numero}}</option>
+                            {% endfor %}
+                        </select>
+                        <label>Estación (Caja):</label>
+                    </div>
+                    <div class="input-field col s12" id="dispositivo">
+                        <select name="dispositivo">                                                        
+                            {% for dispositivo in dispositivos %}
+                                <option value="{{dispositivo.numero}}">Punto de venta: {{dispositivo.numero}}</option>
+                            {% endfor %}
+                        </select>
+                        <label>Punto de venta:</label>
+                    </div>                        
+                    <input type="submit" value="Verificar" class="waves-effect waves-light btn green" style="margin-bottom:10px">
+                {% else %}
+                    <a href="{% url 'ventas:home' %}" class="waves-effect waves-light btn green" style="margin-bottom:10px">REGRESAR</a>
+                {% endif %}
+                
+            </div>            
+        </form>
+    </div>
+{% endblock content %}
+
+
+{% block script %}
+    <script>
+        $('.datepicker').pickadate({
+            selectMonths: true, // Creates a dropdown to control month
+            selectYears: 2, // Creates a dropdown of 15 years to control year,
+            today: 'Hoy',
+            clear: 'Limpiar',
+            close: 'Aceptar',
+            closeOnSelect: true, // Close upon selecting a date,
+            format: 'yyyy-mm-dd',
+            firstDay: true,
+            onStart: function() {
+                var date = new Date();
+                this.set('select', [date.getFullYear(), date.getMonth(), date.getDate()]);
+            }
+        });
+
+        $(document).ready(function(){
+            //$('select').formSelect();
+            var domain = "http://10.10.2.15:8000"
+
+            $('#estacion select').on('change', function(e) {
+                /*
+                    Funcion para obtener los puntos de ventas asociados a la estacion seleccionada
+                */
+                $.ajax({
+                    type: "GET",
+                    url: domain + "/api/v1/ventas/stations/10/devices/",
+                    success: function (data){                        
+                        var json = JSON.stringify(data)
+                        json = JSON.parse(json)
+                            
+                        for (let index = 0; index < json.data.length; index++) {
+                            var element = json.data[index];
+                            $('#dispositivo select').append('<option value="' + element.numero + '" selected="selected">Punto de venta:' + element.numero + '</option>')
+                            $('#dispositivo select').material_select();
+                        }                
+                    }
+                })
+            })
+        });
+
+    </script>
+{% endblock script %}
+    

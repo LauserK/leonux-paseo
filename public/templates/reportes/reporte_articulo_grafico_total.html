@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>GRAFICA DE VENTAS TOTALES</title>
+    <style>
+            body{
+                font-family: "Arial", "Times New Roman", sans-serif;
+                padding: 0 .5rem;
+            }
+            .bold {
+                font-weight: bold;
+            }
+            .header {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between
+            }
+            .filtros {
+                margin-bottom: 1rem;
+            }
+            .filtros p {
+                margin: .2rem;
+                font-size: .8rem;
+            }
+            @media print {
+                @page {
+                    size: letter;
+                    margin: 0.5cm;
+                }
+            }
+        </style>
+</head>
+<body>
+    <h1>GRAFICO DE VENTAS</h1>
+    <div class="header">
+        <div class="filtros">
+            <p><span class="bold">Proveedor</span>: {{proveedor.razon_social}}</p>
+            <p><span class="bold">Tipo de artículo:</span> 
+                {% if referencia == '1' %}
+                Artículos con P.M.V.P marcado
+                {% endif %}
+                {% if referencia == '0' %}
+                Artículos sin control de precio
+                {% endif %}
+            </p>
+            <p><span class="bold">Departamento:</span> {{departamento.nombre}}</p>
+            <p><span class="bold">Grupo/Familia:</span> {{grupo.nombre}}</p>
+            <p><span class="bold">Marca:</span> {{marca.nombre}}</p>
+            <p><span class="bold">Categoria:</span> {{categoria}}</p>
+            <p><span class="bold">Desde:</span> {{desde}} | Hasta:</span> {{hasta}}</p>
+        </div>
+        <div class="datos-usuario filtros">
+            <p><span class="bold">Fecha:</span> {{fecha}}</p>
+        </div>
+    </div>
+
+    <canvas id="myChart" style="width: 21.59cm !important"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var articles = [{% for articulo in articulos %}{% if articulo.cantidad_vendida != 0 %}"{{articulo.nombre}}",{% endif %}{% endfor %}];
+        var cant = [{% for articulo in articulos %}{% if articulo.cantidad_vendida != 0 %}"{{articulo.cantidad_vendida}}",{% endif %}{% endfor %}];
+        var chart = new Chart(ctx, {
+            // The type of chart we want to create
+            type: 'horizontalBar',
+        
+            // The data for our dataset
+            data: {
+                labels: articles,
+                datasets: [{
+                    label: "CANTIDADES VENDIDAS",
+                    backgroundColor: '#ffb74d',
+                    borderColor: '#ffb74d',
+                    data: cant,
+                }]
+            },
+        
+            // Configuration options go here
+            options: {
+                responsive:false,
+                width:600
+            }
+        });
+    </script>
+</body>
+</html>

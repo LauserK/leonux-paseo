@@ -1,0 +1,46 @@
+{% extends "base-sidenav.html" %}
+
+{% block content %}
+    <!-- MAIN VIEW REPORTES -->
+    <div class="col s10">
+        <div class="">
+            <div class="row">
+                <div class="col s12">
+                    <h5 class="center-align">Dispositivos Punto de Venta</h5>
+                    <br/>
+                    <div class="col s12 right-align">
+                        <a href="{% url 'ventas:dispositivos-add' %}" class="waves-effect waves-light btn orange">AGREGAR PUNTO DE VENTA</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Estación</th>
+                                <th>Numero</th>
+                                <th>Serial</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>                            
+                            {% for dispositivo in dispositivos %}
+                                <tr>
+                                    <td>{{dispositivo.estacion.numero}}</td>
+                                    <td>{{dispositivo.numero}}</td>
+                                    <td>{{dispositivo.serial}}</td>
+                                    <td>
+                                        <a href="{% url 'ventas:dispositivos-edit' dispositivo.numero %}" class="green-text"><i class="material-icons">edit</i></a>
+                                        <a href="{% url 'ventas:dispositivos-delete' dispositivo.numero %}" class="red-text"><i class="material-icons">delete</i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

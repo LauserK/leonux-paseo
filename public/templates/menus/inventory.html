@@ -1,0 +1,49 @@
+{% extends "base-sidenav.html" %}
+
+{% block content %}
+    <!-- MAIN VIEW REPORTES -->
+    <form method="POST" class="col s10 ">
+        {% csrf_token %}
+        <div class="container">
+            <div class="row">
+                <div class="row card">
+                    <div class="col s12 center">
+                        <h4>Obtener Información de ventas</h4>
+                    </div>
+                    <div class="col s12 center">
+                        {% if articles_not_updated.length > 0 %}
+                            <h5>Articulos no actualizados porque no existen</h5>
+                        {% elif msg == "Realizado" %}
+                            <h5>Procesado exitosamente!</h5>
+                        {% endif %}
+                        {% for article in articles_not_updated %}
+                            {{article.name}}
+                        {% endfor %}
+                    </div>
+                    <div class="input-field col s12">
+                        <label for="filtro-fecha">Fecha:</label>
+                        <input type="text" class="datepicker" name="filtro-fecha">                        
+                    </div>
+
+                    <input type="submit" value="Procesar" class="waves-effect waves-light btn">
+                </div>                
+            </div>            
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        $('.datepicker').pickadate({
+            selectMonths: true, // Creates a dropdown to control month
+            selectYears: 15, // Creates a dropdown of 15 years to control year,
+            today: 'Hoy',
+            clear: 'Limpiar',
+            close: 'Aceptar',
+            closeOnSelect: true, // Close upon selecting a date,
+            format: 'yyyy-mm-dd',
+            firstDay: true
+        });
+    </script>
+{% endblock script %}

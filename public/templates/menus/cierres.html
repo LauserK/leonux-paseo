@@ -1,0 +1,53 @@
+{% extends "base-sidenav.html" %}
+
+{% block content %}
+    <!-- MAIN VIEW REPORTES -->
+    <div class="col s12">
+        <div class="">
+            <div class="row">
+                <div class="col s12">
+                    <h4 class="center-align">MODULO DE CIERRE</h4>
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <h5 class="center-align">CONSULTAS</h5>
+                    </div>
+                    <div class="col s12 m4 center-align card">
+                        <a href="{% url 'ventas:estaciones' %}" class="orange-text">
+                            <i class="large material-icons">important_devices</i>
+                            <br/>
+                            <strong>Estaciones</strong>
+                        </a>
+                    </div>
+                    <div class="col s12 m4 center-align card">
+                        <a href="{% url 'ventas:dispositivos' %}" class="orange-text">
+                            <i class="large material-icons">credit_card</i>
+                            <br/>
+                            <strong>Punto de Ventas</strong>
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12">
+                        <h5 class="center-align">ACCIONES</h5>
+                    </div>
+                    <div class="col s12 m4 center-align card">
+                        <a href="{% url 'ventas:upload-csv' %}" class="orange-text">
+                            <i class="large material-icons">backup</i>
+                            <br/>
+                            <strong>Subir CSV Platco</strong>
+                        </a>
+                    </div>
+                    <div class="col s12 m4 center-align card">
+                        <a href="{% url 'ventas:jornada-verify' %}" class="orange-text">
+                            <i class="large material-icons">alarm</i>
+                            <br/>
+                            <strong>Jornadas</strong>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base-sidenav.html" %}
+
+{% block content %}
+    <!-- MAIN VIEW REPORTES -->
+    <form method="POST" class="col s10">
+        {% csrf_token %}
+        <div class="container">
+            <div class="row">
+                <div class="col s12">
+                    <h5 class="center-align">MIGRACIÓN A LEONUX</h5>
+                </div>
+                <div class="row">
+                    <div class="col s12 m12 center-align">
+                        <label>{{msg}}</label>
+                    </div>                       
+                    <div class="col s12 m4 center-align">
+                    	<input type="submit" name="" class="waves-effect waves-light btn" value="PRESIONE PARA MIGRAR">
+                    </div>                       
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

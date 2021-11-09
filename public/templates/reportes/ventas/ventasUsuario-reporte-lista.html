@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>REPORTE DE ARTÍCULOS USUARIOS</title>
+    <style>
+        body{
+            font-family: "Arial", "Times New Roman", sans-serif;
+            padding: 0 .5rem;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between
+        }
+        .filtros {
+            margin-bottom: 1rem;
+        }
+        .filtros p {
+            margin: .2rem;
+            font-size: .8rem;
+        }
+        .articulo {
+            border: 1px solid black;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: .4rem;
+        }
+        .articulo header{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            background-color: lightgray;
+            padding: .2rem 1rem;
+            border-bottom: 1px solid black;
+            font-weight: bold;
+        }
+        .depositos h3{
+            font-size: 1.2rem;
+            margin: .5rem
+        }
+        table {
+            border-collapse: collapse;
+            border-left:none;
+            font-size: .9rem;
+        }
+        
+        th, td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        td, th {
+            padding: .3rem;
+        }
+        @media print {
+            @page {
+                size: letter;
+                margin: 0.5cm;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <h1>LISTADOS DE ARTÍCULOS USUARIO</h1>
+    <div class="header">
+        <div class="filtros">
+            <p><span class="bold">Proveedor</span>: {{proveedor.razon_social}}</p>
+            <p><span class="bold">Tipo de artículo:</span> 
+                {% if referencia == '1' %}
+                Artículos con P.M.V.P marcado
+                {% endif %}
+                {% if referencia == '0' %}
+                Artículos sin control de precio
+                {% endif %}
+            </p>
+            <p><span class="bold">Departamento:</span> {{departamento.nombre}}</p>
+            <p><span class="bold">Grupo/Familia:</span> {{grupo.nombre}}</p>
+            <p><span class="bold">Marca:</span> {{marca.nombre}}</p>
+            <p><span class="bold">Categoria:</span> {{categoria}}</p>
+            <p><span class="bold">Desde:</span> {{desde}} | Hasta:</span> {{hasta}}</p>
+        </div>
+        <div class="datos-usuario filtros">
+            <p><span class="bold">Fecha:</span> {{fecha}}</p>
+        </div>
+    </div>
+
+    <section class="articulos">
+        {% for articulo in articulos %}
+            <article class="articulo">
+                <header>
+                    <div class="articulo-nombre">
+                        {{articulo.codigo}} - {{articulo.nombre}}
+                    </div>
+                    <div class="articulo-ventas">
+                        Cantidades vendidas: {{articulo.cantidad_vendida}}
+                    </div>
+                </header>
+                <section class="depositos">
+                    <h3>USUARIOS ACTIVOS</h3>
+                    {% if articulo.usuarios|length > 0 %}
+                        <table>
+                            <tr style="text-align:center; font-weight: bold;">
+                                <td>NOMBRE</td>
+                                <td>CANTIDAD FACTURADA</td>
+                            </tr>
+                            {% for usuario in articulo.usuarios %}
+                                <tr>
+                                    <td>{{usuario.nombre}}</td>
+                                    <td style="text-align:center;">{{usuario.cantidad}}</td>
+                                </tr>
+                            {% endfor %}                            
+                        </table>
+                    {% else %}
+                        Este artículo no ha sido facturado en el rango de fecha seleccionado
+                    {% endif %}
+                </section>
+                <section class="grafica">
+
+                </section>
+            </article>
+        {% endfor %}
+    </section>
+</body>
+</html>

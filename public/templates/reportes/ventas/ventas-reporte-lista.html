@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>REPORTE DE VENTAS</title>
+    <style>
+        body{
+            font-family: "Arial", "Times New Roman", sans-serif;
+            padding: 0 .5rem;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .bordes {
+            border: 1px solid black;
+            margin: 0px;
+            text-align: right;
+        }
+        .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between
+        }
+        .filtros {
+            margin-bottom: 1rem;
+        }
+        .filtros p {
+            margin: .2rem;
+            font-size: .8rem;
+        }
+        .articulo {
+            border: 1px solid black;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: .4rem;
+        }
+        .articulo header{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            background-color: lightgray;
+            padding: .2rem 1rem;
+            border-bottom: 1px solid black;
+            font-weight: bold;
+        }
+        .depositos {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+        .depositos h3{
+            font-size: 1.2rem;
+            margin: .5rem
+        }
+        table {
+            border-collapse: collapse;
+            border-left:none;
+            font-size: .9rem;
+        }
+        .totales {
+            float: right;
+        }
+        
+        th, td {
+            border-bottom: 1px solid #ddd;
+        }
+
+        td, th {
+            padding: .3rem;
+        }
+        @media print {
+            @page {
+                size: letter;
+                margin: 0.5cm;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <h1>LISTADOS DE VENTAS</h1>
+    <div class="header">
+        <div class="filtros">            
+            <p><span class="bold">Desde:</span> {{desde}} | Hasta:</span> {{hasta}}</p>
+        </div>
+        <div class="datos-usuario filtros">
+            <p><span class="bold">Fecha:</span> {{fecha}}</p>
+        </div>
+    </div>
+
+    <section class="articulos">
+        {% for venta in ventas %}
+            <article class="articulo">
+                <header>
+                    <div class="articulo-nombre">
+                        ESTACIÓN: {{venta.caja}} SERIAL: {{venta.estacion}}
+                    </div>
+                    <div class="articulo-ventas">
+                        TOTAL VENTAS: Bs: {{venta.total}}
+                    </div>
+                </header>
+                <section class="depositos">
+                    <div class="div">
+                        <h3>USUARIOS ACTIVOS</h3>
+                        {% if venta.usuarios|length > 0 %}
+                            <table>
+                                <tr style="text-align:center; font-weight: bold;">
+                                    <td>NOMBRE</td>
+                                    <td>TOTAL VENTAS POR USUARIO</td>
+                                </tr>
+                                {% for usuario in venta.usuarios %}
+                                    <tr>
+                                        <td>{{usuario.usuario}}</td>
+                                        <td style="text-align:center;">{{usuario.total}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        {% else %}
+                            Esta estación no fue usada por ningún usuario
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h3>NOTAS DE CRÉDITO</h3>
+                        {% if venta.creditos|length > 0 %}
+                            <table>
+                                <tr style="text-align:center; font-weight: bold;">
+                                    <td>NOMBRE</td>
+                                    <td>TOTAL NOTAS DE CRÉDITOS</td>
+                                </tr>
+                                {% for usuario in venta.creditos %}
+                                    <tr>
+                                        <td>{{usuario.usuario}}</td>
+                                        <td style="text-align:center;">{{usuario.total}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        {% else %}
+                            No existen notas de crédito asociadas a esta estación
+                        {% endif %}
+                    </div>
+                </section>
+            </article>
+        {% endfor %}
+    </section>
+    <section class="totales">
+        <div class="bordes">
+            <strong>VENTAS:</strong> {{totales.ventas}}                
+        </div>
+        <div class="bordes">
+            <strong>NOTAS CRÉDITOS:</strong> {{totales.creditos}}
+        </div>
+        <div class="bordes">
+            <strong>TOTAL:</strong> {{totales.total}}
+        </div>
+    </section>
+</body>
+</html>

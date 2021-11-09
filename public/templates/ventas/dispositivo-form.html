@@ -1,0 +1,75 @@
+{% extends 'base-sidenav.html' %}
+
+{% block content %}
+    <div class="row">
+        <form method="POST" class="col s12 offset-s1 center-align">
+            {% csrf_token %}
+            <div class="row card">
+                <div class="col s12 center">
+                    {% if action == 'edit' %}
+                        <h4>Caja: {{dispositivo.estacion.numero}} PV: {{dispositivo.numero}} | {{dispositivo.serial}}</h4>
+                    {% else %}
+                        <h4>Añadir nuevo Punto de Venta</h4>
+                    {% endif %}
+                    <br/>
+
+                    {% if action == 'saving' or action == 'destroy' %}
+                        <p class="center-align {% if success == True %} green-text {% else %} red-text {% endif %}">{{mensaje}}</p>
+                    {% endif %}
+                </div>
+                
+                {% if action == 'create' or action == 'edit' %}
+                    <div class="input-field col s12">
+                        <select name="numero_estacion">                            
+                            {% for estacion in estaciones %}
+                                <option value="{{estacion.numero}}" 
+                                {% if dispositivo.estacion == estacion %}
+                                    selected
+                                {% endif %}
+                                    >Estación: {{estacion.numero}}</option>
+                            {% endfor %}                            
+                        </select>
+                        <label>Estación:</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="numero_dispositivo" name="numero_dispositivo" type="number" min="1" step="1" class="validate" value="{{dispositivo.numero}}" required>
+                        <label>Número de punto de venta:</label>
+                    </div>
+                    <div class="input-field col s12">
+                        <input id="serial_dispositivo" name="serial_dispositivo"  type="text" class="validate" value="{{dispositivo.serial}}" required>
+                        <label>Serial del equipo:</label>
+                    </div>
+                    
+                    {% if action == 'edit' %}
+                        <input type="submit" value="Editar" class="waves-effect waves-light btn green darken-2" style="margin-bottom:10px">
+                    {% else %}
+                        <input type="submit" value="Agregar" class="waves-effect waves-light btn green" style="margin-bottom:10px">
+                    {% endif %}
+                {% elif action == 'saving' %}
+                    <a href="{% url 'ventas:dispositivos' %}" class="waves-effect waves-light btn green" style="margin-bottom:10px">REGRESAR</a>
+                {% else %}
+                    <div class="col s12">
+                        <div class="row">
+                            <div class="col s6">
+                                <input type="submit" value="Eliminar" class="waves-effect waves-light btn red" style="margin-bottom:10px">
+                            </div>
+                            <div class="col s6">
+                                <a href="{% url 'ventas:dispositivos' %}" class="waves-effect waves-light btn green" style="margin-bottom:10px">CANCELAR</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                {% endif %}    
+            </div>            
+        </form>
+    </div>
+{% endblock content %}
+
+
+{% block script %}
+    <script>
+        $(document).ready(function(){
+            $('select').formSelect();
+        });
+    </script>
+{% endblock script %}

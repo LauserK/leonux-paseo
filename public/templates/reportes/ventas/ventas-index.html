@@ -1,0 +1,52 @@
+{% extends 'base-sidenav.html' %}
+
+{% block content %}
+    <div class="row">
+        <form method="POST" class="col s12 offset-s1 center-align">
+            {% csrf_token %}
+
+            <div class="row card">
+                <div class="col s12 center">
+                    <h4>REPORTE DE VENTAS</h4>
+                </div>
+
+                <div class="col s12">
+                    <h5 class="center">FILTRO</h5>
+                    <p>
+                        <input type="radio" name="filtro-dias" id="dias" value="dias" class="with-gap" checked>
+                        <label for="dias">Dias anteriores</label>
+                        <div class="input-field col s12">
+                            <select name="filtro-dia">
+                                <option value="0" selected>Hoy</option>
+                                <option value="1">Día anterior</option>
+                                <option value="7">Últimos 7 días</option>
+                                <option value="15">Últimos 15 días</option>
+                                <option value="30">Últimos 30 días</option>
+                                <option value="180">Últimos 6 meses</option>
+                                <option value="365">Últimos 12 meses</option>
+                            </select>
+                        </div>
+                    </p>
+                    <p>
+                        <input type="radio" name="filtro-dias" id="fechas" value="fechas" class="with-gap">
+                        <label for="fechas">Por rango de fechas:</label>
+                    </p>
+                    <div class="col s6">
+                        <p>
+                            <label for="filtro-desde">Desde:</label>
+                            <input type="text" class="datepicker" name="filtro-desde">
+                        </p>
+                    </div>
+                    <div class="col s6">
+                        <p>
+                            <label for="filtro-hasta">Hasta:</label>
+                            <input type="text" class="datepicker" name="filtro-hasta">
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <input type="submit" value="Generar" class="waves-effect waves-light btn">
+        </form>    
+    </div>
+{% endblock content %}
+    
