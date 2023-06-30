@@ -3,7 +3,7 @@ gunicorn==19.7.1
 html5lib==1.0b10
 httplib2==0.11.3
 Pillow==5.1.0
-PyPDF2==1.26.0
+PyPDF2==1.27.9
 pytz==2018.4
 reportlab==3.4.0
 six==1.11.0
